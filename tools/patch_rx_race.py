@@ -51,3 +51,4 @@ for old, new in edits:
     s = s.replace(old, new)
 open(P, "w", encoding="utf-8").write(s)
 print("適用しました:", os.path.relpath(P))
+
