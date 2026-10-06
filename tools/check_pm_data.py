@@ -14,6 +14,8 @@ check_pm_data.py — 10/9 の測定直後に「データが使えるか」をそ
   pm_ramp              : 傾きごとの遅れ（指令と実測が区間の中点を通る時刻の差）
   pm_sine2             : 中心 0.30 の振幅比（周波数×振幅）
   pm_stairs / pm_rand  : 基本チェックのみ
+  pm_rev               : 2段ステップの2段目の応答（反転と継続の比較）
+  pm_ch_F / pm_ch_G    : そのチャネルの小ステップ・振幅比・反転
 
 注意：実機ログは圧力の列が入れ替わっている（2026/9/29 判明）。
       物理的な DF = meas_pres_F 列、物理的な F = meas_pres_DF 列、G はそのまま。
@@ -89,6 +91,33 @@ def step_table(u, p, title, allow=None):
     print(g.round(2).to_string())
 
 
+def rev_table(u, p, seg, title):
+    """2段ステップ（pm_rev / pm_ch_*）：2段目に対して 200 ms 後までに動いた割合。
+    線形なら『反転』と『継続』の平均は d, h によらず一定（1段目の残りが打ち消し合う）"""
+    ps = smooth(p); rows = []
+    for L in pd.unique(seg):
+        mm = re.match(r"(rev|cont)_(up|dn)_c([\d.]+)_d([\d.]+)_h([\d.]+)_r\d_s2$", str(L))
+        if not mm:
+            continue
+        ii = np.flatnonzero(seg == L)
+        if len(ii) < 60 or ii[0] < 50:
+            continue
+        w = u[ii[0] - 20: ii[0] + 20]; k = np.flatnonzero(np.abs(np.diff(w)) > 0.003)
+        on = ii[0] - 20 + k[-1] + 1 if len(k) else ii[0]
+        dd = float(mm[4]); first = 1 if mm[2] == "up" else -1; second = -first if mm[1] == "rev" else first
+        frac = (ps[on + int(0.2 / DT)] - ps[on]) / (second * dd)
+        rows.append((mm[1], dd * 1000, float(mm[5]) * 1000, frac))
+    if not rows:
+        print(f"  {title}: 2段ステップが見つかりません"); return
+    T = pd.DataFrame(rows, columns=["種類", "d[kPa]", "h[ms]", "割合"])
+    piv = T.pivot_table(index=["d[kPa]", "h[ms]"], columns="種類", values="割合", aggfunc="median")
+    if "cont" in piv:
+        piv["平均"] = piv.mean(axis=1)
+    print(f"\n  {title}：2段目に対して 200 ms 後までに動いた割合（中央値）")
+    print("  rev=反転, cont=継続。線形なら『平均』は d・h によらずほぼ一定。小さい d・短い h で下がれば反転のしきい値")
+    print(piv.round(2).to_string())
+
+
 def lock(x, tt, f):
     c = np.cos(2 * np.pi * f * tt); s = np.sin(2 * np.pi * f * tt); x = x - x.mean()
     return np.hypot(2 * np.mean(x * c), 2 * np.mean(x * s))
@@ -113,6 +142,10 @@ def main():
           f"{'OK' if (gap > 50).sum() < 5 else '★ 要確認'}")
     # 3. エコー
     flag = np.nan_to_num(d["flag"].values.astype(float))
+    bad = np.abs(flag) > 1.0                      # パケットの読み取りミス
+    if bad.any():
+        flag[bad] = np.interp(np.flatnonzero(bad), np.flatnonzero(~bad), flag[~bad])
+        print(f"  （flag の異常値 {int(bad.sum())} 点を補間）")
     lag, err = echo_lag(flag, sig["cmd_pressure_DF"].values)
     ok_echo = err < 2e-3 and np.std(flag) > 0.01
     print(f"  エコー  ずれ {lag * DT * 1000:.0f} ms, 一致度(MSE) {err:.1e}   "
@@ -129,6 +162,24 @@ def main():
 
     if a.name == "pm_smallstep":
         step_table(flag, pDF, "DF", allow=np.array([str(x).startswith("step_") for x in seg]))
+    elif a.name == "pm_rev":
+        rev_table(flag, pDF, seg, "DF")
+    elif a.name in ("pm_ch_F", "pm_ch_G"):
+        w = a.name[-1]
+        u = sig[f"cmd_pressure_{w}"].values[np.clip(((j - lag) * DT / 0.02).astype(int), 0, len(sig) - 1)]
+        pw = d[PHYS[w]].values
+        step_table(u, pw, w, allow=np.array([str(x).startswith("step_") for x in seg]))
+        rows = []
+        for L in pd.unique(seg):
+            mm = re.match(r"amp_c([\d.]+)_a([\d.]+)_f([\d.]+)", str(L))
+            if not mm:
+                continue
+            ii = np.flatnonzero(seg == L)[30:-30]; tt = ii * DT; f = float(mm[3])
+            rows.append((float(mm[2]), f, lock(pw[ii], tt, f) / max(lock(u[ii], tt, f), 1e-6)))
+        T = pd.DataFrame(rows, columns=["a", "f", "gain"])
+        print(f"\n  {w} の振幅比（中心 0.30）：行=振幅[MPa], 列=周波数[Hz]")
+        print(T.pivot_table(index="a", columns="f", values="gain").round(2).to_string())
+        rev_table(u, pw, seg, w)
     elif a.name in ("pm_stairs", "pm_rand"):
         print("\n  （このファイルは基本チェックのみ。中身の解析は持ち帰ってから）")
     elif a.name == "pm_fg":

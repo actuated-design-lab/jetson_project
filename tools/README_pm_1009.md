@@ -82,3 +82,33 @@ git push
 
 - 実機ログは圧力の列が入れ替わっている：物理的な DF = `meas_pres_F` 列、物理的な F = `meas_pres_DF` 列（9/29 判明）。`check_pm_data.py` は戻してから使っている
 - 解析（同時同定）は持ち帰ってから。目的関数は振幅比・位相・ステップ波形・ランプをまとめて入れ、`pm_rand` とテスト動作 C/E で検証する
+
+---
+
+# 2回目（10/6 の結果を受けて）：反転としきい値、PAM ごとの違い
+
+## 10/6 の結果（1回目）
+- 1 s 保持したあとの小ステップ（5〜80 kPa）は、大きさに関係なく同じ速さで通り、最後まで届く → 「積分＋不感帯」の仮説は外れ
+- しきい値が出るのは「小さい段（≤30 kPa）で向きが反転し、直前の変化から 0.2 s 以内」のとき（pm_rand：実機 0.16 / O モデル 0.45, 43件）
+- 上げは下げより 60〜100 ms 遅い。F は下げ（排気）が DF・G の約2倍遅い（t50 160 ms vs 75 ms）
+
+## 信号（`tools/gen_pm_signals_rev.py`）
+| 順 | ファイル | 中身 | 長さ |
+|---|---|---|---|
+| 1 | `pm_rev` | DF の2段ステップ：±d → 保持 h → 反転（元に戻る）または継続（さらに同じ向き）。d = 10/20/40/80 kPa, h = 40〜500 ms | 7.3 分 |
+| 2 | `pm_ch_F` | F だけで 小ステップ（10〜80 kPa）＋正弦（2/3/4 Hz）＋反転 | 4.4 分 |
+| 3 | `pm_ch_G` | 同じものを G で | 4.4 分 |
+
+## 手順（Jetson、コンテナ内）
+```
+cd /data/jetson_project
+git pull
+for s in pm_rev pm_ch_F pm_ch_G; do
+  python tools/run_signal_playback.py $s && python tools/check_pm_data.py $s; sleep 5
+done
+```
+終わったらコンテナを出て、ホストで chown → `git add test_signals/data_pm_*.csv` → commit → push。
+
+## `check_pm_data.py` の見方（2回目）
+- `pm_rev`：2段目に対して 200 ms 後までに動いた割合。反転（rev）と継続（cont）の**平均**を見る。線形なら d・h によらずほぼ一定（O モデルの合成データで 0.8〜0.9）。小さい d・短い h で平均が下がれば、反転のしきい値
+- `pm_ch_F` / `pm_ch_G`：そのチャネルの小ステップの t50、振幅比、反転の割合。DF（1回目）と比べる
