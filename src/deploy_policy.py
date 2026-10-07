@@ -62,6 +62,9 @@ def parse_args():
                    help="手首/ハンド関節エンコーダの配線が逆のとき、受信角度2chを入れ替える")
     p.add_argument("--usb_latency", type=int, choices=[1, 16], default=None,
                    help="USB変換の溜め込み時間[ms]。1 または 16。省略時は変更しない")
+    p.add_argument("--action_mode", choices=["continuous", "binary"], default=None,
+                   help="圧力指令の出し方を manifest から上書きする。binary = 電磁弁(0 / p_max)。"
+                        "例: 連続値で学習したモデルを2値で動かす比較。binary の出力は既定で data/binary_<日付>/ に分ける")
     p.add_argument("--list", action="store_true", help="manifest のモデル一覧を表示して終了")
     return p.parse_args()
 
@@ -91,6 +94,11 @@ class Deployer:
         defaults = manifest.get("defaults", {}) or {}
 
         self.spec = resolve(args.model, manifest)
+        # --action_mode が指定されたら manifest の値を上書きする（記録用に出どころも残す）
+        self.action_mode_source = "manifest"
+        if args.action_mode and args.action_mode != self.spec.action_mode:
+            self.spec.action_mode = args.action_mode
+            self.action_mode_source = "cli_override"
         self.policy = PolicyRunner(self.spec, verbose=True)
         self.dt = self.spec.control_dt
 
@@ -162,6 +170,10 @@ class Deployer:
         print("\n=== DEPLOY START ===")
         print(f"  model : {self.spec.key}  ({self.spec.label})")
         print(f"  song  : {a.midi}  (trial {a.trial})")
+        mode = self.spec.action_mode
+        if mode == "binary":
+            mode += f" (0 / {self.spec.p_max} MPa, threshold {self.spec.binary_threshold} x p_max)"
+        print(f"  action: {mode}  [{self.action_mode_source}]")
         print(f"  loop  : {1/self.dt:.0f}Hz control / {SENSOR_RATE_HZ:.0f}Hz recv")
         print(f"  encoder: {'SWAPPED (wrist<->grip)' if a.swap_encoders else 'as received'}")
 
@@ -260,15 +272,25 @@ class Deployer:
             dc = pd.DataFrame(self.cmd_logs).rename(columns={"cmd_time": "time"})
             df = pd.merge_asof(df, dc, on="time", direction="backward")
 
-        out_dir = a.out or os.path.join(
-            REPO_ROOT, "data", f"{self.spec.group.lower()}_{date.today():%Y%m%d}")
+        # 既定の出力先: data/<group>_<日付>/。2値で動かしたランは、連続値の実験フォルダ
+        # （data/ral_* など）に混ざらないよう、どのモデルでも data/binary_<日付>/ に出す。
+        out_group = "binary" if self.spec.action_mode == "binary" else self.spec.group.lower()
+        out_dir = a.out or os.path.join(REPO_ROOT, "data", f"{out_group}_{date.today():%Y%m%d}")
         os.makedirs(out_dir, exist_ok=True)
         midi_name = os.path.splitext(os.path.basename(a.midi))[0]
         tag = "verify" if a.verify else f"{self.spec.group}-{self.spec.name}"
+        if not a.verify and self.action_mode_source == "cli_override":
+            tag += f"-{self.spec.action_mode}"
         stem = f"deploy_{midi_name}_{tag}_trial{a.trial:02d}_{int(time.time())}"
 
         csv_path = os.path.join(out_dir, stem + ".csv")
         df.to_csv(csv_path, index=False)
+
+        # --- 2値で動かしたときは、実際に送った指令が 0 / p_max だけだったかを確認して残す ---
+        cmd_binary_ok = None
+        if self.spec.action_mode == "binary" and self.cmd_logs and not a.verify:
+            sent = np.array([[c["cmd_DF"], c["cmd_F"], c["cmd_G"]] for c in self.cmd_logs])
+            cmd_binary_ok = bool(np.all(np.isclose(sent, 0.0) | np.isclose(sent, self.spec.p_max)))
 
         # --- 実行条件のサイドカー（trial数・ckpt・パケット統計を必ず残す） ---
         expected = int(round(elapsed * SENSOR_RATE_HZ))
@@ -284,6 +306,10 @@ class Deployer:
             "manifest_extra": self.spec.extra,
             "midi": a.midi, "bpm": float(self.rhythm.bpm), "trial": a.trial,
             "control_dt": self.dt, "p_max": self.spec.p_max,
+            "action_mode": self.spec.action_mode,
+            "action_mode_source": self.action_mode_source,
+            "binary_threshold": self.spec.binary_threshold if self.spec.action_mode == "binary" else None,
+            "cmd_binary_ok": cmd_binary_ok,
             "time_basis": "gen_envelope", "t_start": getattr(self, "t_start", None),
             "usb_latency_arg": a.usb_latency,
             "latency_timer": read_latency_timer(a.port or "/dev/ttyUSB0"),
@@ -309,6 +335,8 @@ class Deployer:
 
         print(f"[Log] {csv_path}")
         print(f"[Log] {os.path.join(out_dir, stem + '.json')}")
+        if cmd_binary_ok is not None:
+            print(f"[Check] 送信した圧力指令が 0 / {self.spec.p_max} MPa だけか: {'OK' if cmd_binary_ok else 'NG'}")
         yield_pct = 100 * meta["packet_yield"] if meta["packet_yield"] else 0
         print(f"[Stat] 受信 {self.receiver.n_packets} / 期待 {expected} "
               f"({yield_pct:.1f}%), 再同期で捨てたバイト {self.receiver.n_dropped}")

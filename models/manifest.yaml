@@ -16,6 +16,10 @@
 defaults:
   control_dt: 0.02        # 制御周期 [s] = 50Hz
   p_max: 0.6              # 指令圧力の上限 [MPa]   p = (clip(a,-1,1)+1)/2 * p_max
+  # 各モデルに action_mode を書ける（省略時 continuous = 比例弁、上の式のまま）。
+  #   action_mode: binary      電磁弁。上の p が binary_threshold * p_max 以上なら p_max、未満なら 0
+  #   binary_threshold: 0.5    sim の controller.discrete_threshold と同じ値にすること
+  # ONNX は2値化前の連続値の action を出す（sim でも2値化はコントローラ側）。2値化は実機側でここに従って行う。
   target_force: 20.0      # 目標打撃力 [N]（lookahead の正規化に使う）
   serial_port: /dev/ttyUSB0
   baud_rate: 230400
@@ -265,3 +269,33 @@ RAL:
     label: "E: MLP+framestack(k=5), lookahead=0.5s"
     seed: 5
     checkpoint: model_1499.pt
+
+# -----------------------------------------------------------------------------
+# 電磁弁（2値）版（sim: porcaro_2026 のタスク Porcaro-DR-Discrete-user0）
+#   出力先の既定は data/binary_<日付>/（連続値の data/ral_* とは混ざらない）。
+#   export と登録の手順は models/BINARY/README.md。ONNX を置いたらコメントを外す。
+#   連続値で学習したモデルをそのまま2値で動かす比較は、manifest に足さずに
+#     python3 src/deploy_policy.py --model RAL/B_seed1 --action_mode binary ...
+#   でできる（ログのファイル名に -binary が付く）。
+# -----------------------------------------------------------------------------
+# BINARY:
+#   scratch_seed1:
+#     file: BINARY/binary_scratch_seed1.onnx
+#     arch: lstm
+#     lookahead_horizon: 0.5
+#     frame_stack: 1
+#     action_mode: binary
+#     binary_threshold: 0.5
+#     label: "binary: LSTM, lookahead=0.5s, trained from scratch"
+#     seed: 1
+#     checkpoint: model_1499.pt
+#   ft_from_B_seed1:
+#     file: BINARY/binary_ft_from_B_seed1.onnx
+#     arch: lstm
+#     lookahead_horizon: 0.5
+#     frame_stack: 1
+#     action_mode: binary
+#     binary_threshold: 0.5
+#     label: "binary: LSTM, lookahead=0.5s, fine-tuned from RA-L B seed1"
+#     seed: 1
+#     checkpoint: model_1499.pt

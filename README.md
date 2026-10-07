@@ -29,6 +29,7 @@ models/
   manifest.yaml   ★モデル定義の唯一の真実（論文名 A〜E ⇔ ファイル ⇔ パラメータ）
   IROS/           IROS投稿時にデプロイした学習済みモデル（論文名にリネーム済み）
   RAL/            RA-L用にexportするモデル置き場 → models/RAL/README.md
+  BINARY/         電磁弁（2値）版モデル置き場 → models/BINARY/README.md
 
 songs/          入力MIDI（test_*, gmd_*）
 test_signals/   ポリシー無しの指令信号CSV（exp1〜8）
@@ -39,6 +40,7 @@ data/           ★研究の実機ログ（これからのRUN）。1セッショ
   ral_YYYYMMDD/      デプロイ実行の出力先（下記「出力先の既定値」参照）
   ral_YYYYMMDD_b/    同日に複数セッションがある場合の2つ目以降
   ral_quarantine/    力センサ死亡が疑われ集計から除外したラン（IROS期モデルで実施したもの含む）
+  binary_YYYYMMDD/   2値（action_mode: binary）で動かしたラン。どのモデルでも2値ならここに出る
 
 out/            集計CSV・図（analysis/ の出力）
   ral/               summary_*.csv, strikes_*.csv など
@@ -110,6 +112,11 @@ python3 src/deploy_policy.py --model IROS/B --midi songs/test_single4_bpm60.mid 
 # 実機で走らせる
 python3 src/deploy_policy.py --model RAL/E --midi songs/gmd_02_mid_bpm105.mid --trial 1
 
+# 2値（電磁弁）で動かす。manifest で action_mode: binary のモデルはそのまま、
+# 連続値で学習したモデルを2値で動かすときは --action_mode binary（出力は data/binary_<日付>/）
+python3 src/deploy_policy.py --model BINARY/scratch_seed1 --midi songs/test_single4_bpm60.mid --mock
+python3 src/deploy_policy.py --model RAL/B_seed1 --action_mode binary --midi songs/test_single4_bpm60.mid --mock
+
 # 駆動せずに目標軌道だけ確認
 python3 src/deploy_policy.py --model IROS/B --midi songs/test_single4_bpm60.mid --verify
 
@@ -123,6 +130,8 @@ python3 tools/run_signal_playback.py exp2_step_response.csv
 `--out` で明示的に指定すれば既定値は使わない。
 ファイル名は `deploy_<曲>_<group>-<X>_trial<NN>_<unixtime>.csv` と、
 同名の `.json`（モデル・trial番号・パケット受信率・git rev などの実行条件）。
+2値で動かしたランは `.json` に `action_mode: binary` と、送った指令が 0 / p_max だけだったか（`cmd_binary_ok`）が残る。
+`--action_mode` で上書きしたときはファイル名の `<X>` の後ろに `-binary` が付く。
 
 ### モデルを追加・差し替えたら必ず
 
