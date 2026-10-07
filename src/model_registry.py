@@ -47,6 +47,10 @@ class ModelSpec:
     target_force: float
     label: str = ""
     extra: dict = field(default_factory=dict)
+    # 圧力指令の出し方。"continuous"（既定・比例弁）か "binary"（電磁弁: 0 / p_max の2値）。
+    # binary は sim の DiscreteTorqueActionController と同じ: 連続値の指令が p_max*binary_threshold 以上なら p_max。
+    action_mode: str = "continuous"
+    binary_threshold: float = 0.5
 
     @property
     def lookahead_steps(self) -> int:
@@ -71,6 +75,8 @@ class ModelSpec:
             f"    arch            : {self.arch}\n"
             f"    lookahead       : {self.lookahead_horizon}s = {self.lookahead_steps} steps\n"
             f"    frame_stack     : {self.frame_stack}\n"
+            f"    action_mode     : {self.action_mode}"
+            f"{f' (threshold {self.binary_threshold} x p_max)' if self.action_mode == 'binary' else ''}\n"
             f"    base_obs_dim    : {self.base_obs_dim}\n"
             f"    obs_dim         : {self.obs_dim}"
         )
@@ -131,6 +137,13 @@ def resolve(model_key: str, manifest: dict | None = None) -> ModelSpec:
     if e["arch"] not in ("lstm", "mlp"):
         raise ValueError(f"{group}/{name}: arch は 'lstm' か 'mlp'。実際: {e['arch']}")
 
+    action_mode = e.get("action_mode", "continuous")
+    if action_mode not in ("continuous", "binary"):
+        raise ValueError(f"{group}/{name}: action_mode は 'continuous' か 'binary'。実際: {action_mode}")
+    binary_threshold = float(e.get("binary_threshold", 0.5))
+    if not 0.0 <= binary_threshold <= 1.0:
+        raise ValueError(f"{group}/{name}: binary_threshold は 0〜1（p_max に対する割合）。実際: {binary_threshold}")
+
     path = e["file"]
     if not os.path.isabs(path):
         path = os.path.join(REPO_ROOT, "models", path)
@@ -147,7 +160,10 @@ def resolve(model_key: str, manifest: dict | None = None) -> ModelSpec:
         p_max=float(defaults.get("p_max", 0.6)),
         target_force=float(defaults.get("target_force", 20.0)),
         label=e.get("label", ""),
-        extra={k: v for k, v in e.items() if k not in required + ("label",)},
+        extra={k: v for k, v in e.items()
+               if k not in required + ("label", "action_mode", "binary_threshold")},
+        action_mode=action_mode,
+        binary_threshold=binary_threshold,
     )
 
 
@@ -279,7 +295,14 @@ class PolicyRunner:
 
     # ---------------------------------------------------------------- 変換
     def action_to_pressure(self, action: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        """action -> (clip後action, 圧力指令[MPa] x3)"""
+        """action -> (clip後action, 圧力指令[MPa] x3)
+
+        binary のときも、次の観測に入れる prev_action は clip 後の連続値のまま（sim と同じ。
+        sim でも2値化はコントローラ内の圧力指令に対してだけ行い、観測の prev_action は方策出力）。
+        """
         a = np.clip(np.asarray(action, dtype=np.float32).reshape(-1), -1.0, 1.0)
         p = (a + 1.0) / 2.0 * self.spec.p_max
+        if self.spec.action_mode == "binary":
+            p = np.where(p >= self.spec.binary_threshold * self.spec.p_max,
+                         np.float32(self.spec.p_max), np.float32(0.0)).astype(np.float32)
         return a, p
