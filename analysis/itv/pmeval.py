@@ -14,6 +14,8 @@
 from __future__ import annotations
 import os, re, sys, glob
 import numpy as np, pandas as pd
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "src"))
+from repo_paths import find_measured, signal_path  # noqa: E402
 
 DT = 0.005
 # 既定はこのリポジトリのルート（analysis/itv/ の2つ上）。別の場所のデータを読むときは JETSON_PROJECT で指定
@@ -58,10 +60,9 @@ def _echo_lag(flag, cmd50):
 
 def load(JP, key):
     sig_name, data_name, kind = FILES[key]
-    TS = os.path.join(JP, "test_signals")
-    d = pd.read_csv(os.path.join(TS, data_name))
-    ann = os.path.join(TS, f"{sig_name}_annotated.csv")
-    sig = pd.read_csv(ann) if os.path.exists(ann) else pd.read_csv(os.path.join(TS, f"{sig_name}.csv"))
+    d = pd.read_csv(find_measured(data_name, JP))
+    ann = signal_path(f"{sig_name}_annotated", JP)
+    sig = pd.read_csv(ann) if os.path.exists(ann) else pd.read_csv(signal_path(sig_name, JP))
     fl = np.nan_to_num(d.flag.values.astype(float))
     bad = np.abs(fl) > 1
     if bad.any():

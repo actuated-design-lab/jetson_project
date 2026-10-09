@@ -6,8 +6,8 @@ def write(name, segs):
     d=pd.DataFrame({'cmd_pressure_DF':np.clip(df,0,0.6)})
     d['cmd_pressure_F']=F_HOLD; d['cmd_pressure_G']=G_HOLD
     d.insert(0,'time',np.arange(len(d))*DT)
-    d.to_csv(f'test_signals/{name}.csv',index=False)
-    d.assign(segment=tag).to_csv(f'test_signals/{name}_annotated.csv',index=False)
+    d.to_csv(f'signals/{name}.csv',index=False)
+    d.assign(segment=tag).to_csv(f'signals/{name}_annotated.csv',index=False)
     print(f'{name}: {len(d)*DT/60:.1f} 分')
 def const(v,sec): return np.full(int(round(sec/DT)),v)
 # A: 正弦（中心×振幅×周波数）

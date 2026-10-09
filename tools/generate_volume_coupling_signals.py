@@ -6,7 +6,7 @@ generate_volume_coupling_signals.py
 「指令圧が一定でも、関節が動けばPAMの体積が変わり、実測圧が動くのか」
 を判定するための加振信号を生成する。治具は一切使わない。ソフトのみ。
 
-なぜ既存の test_signals では駄目か
+なぜ既存の入力信号（signals/）では駄目か
 ----------------------------------
   exp1_static_hysteresis : 構造は正しい（F固定・DF正弦）が 0.05 Hz。
       同定済みの一次遅れ τ≈88 ms → コーナー周波数 1/(2πτ) ≈ 1.8 Hz。
@@ -32,13 +32,10 @@ generate_volume_coupling_signals.py
 
 出力
 ----
-  <run_signal_playback.py が探す test_signals/>/exc_volume_coupling.csv
+  signals/exc_volume_coupling.csv（run_signal_playback.py が読む場所）
   列は run_signal_playback.py が読む形式:
       time, cmd_pressure_DF, cmd_pressure_F, cmd_pressure_G
 
-  出力先はリポジトリの構成に合わせて自動で決める。v3再編前は
-  tools/test_signals/、再編後は <repo root>/test_signals/ が探索先なので、
-  存在する方に書く（どちらも無ければ repo root 側を作る）。
   --out で明示指定も可。
 
 実行
@@ -74,16 +71,8 @@ _REPO_ROOT = os.path.dirname(_HERE)
 
 
 def resolve_out_dir() -> str:
-    """run_signal_playback.py が探す test_signals/ を見つける。
-
-    v3再編で _resolve_path() の基準が script_dir から REPO_ROOT に変わったため、
-    どちらの構成でも正しい場所に書けるように存在確認で決める。
-    """
-    for cand in (os.path.join(_REPO_ROOT, "test_signals"),
-                 os.path.join(_HERE, "test_signals")):
-        if os.path.isdir(cand):
-            return cand
-    return os.path.join(_REPO_ROOT, "test_signals")
+    """run_signal_playback.py が入力信号を探す signals/。"""
+    return os.path.join(_REPO_ROOT, "signals")
 
 
 def _taper(n: int, n_ramp: int) -> np.ndarray:

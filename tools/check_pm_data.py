@@ -1,8 +1,8 @@
 """
 check_pm_data.py — 10/9 の測定直後に「データが使えるか」をその場で確かめる
 
-  python tools/check_pm_data.py pm_smallstep          # 最新の data_pm_smallstep_*.csv を見る
-  python tools/check_pm_data.py pm_ramp --file test_signals/data_pm_ramp_XXXX.csv
+  python tools/check_pm_data.py pm_smallstep          # 最新の data_pm_smallstep_*.csv（data/*/*/playback_*/）を見る
+  python tools/check_pm_data.py pm_ramp --file data/user0/jfps2026/playback_20261009/data_pm_ramp_XXXX.csv
 
 見るもの（どのファイルでも）:
   1. 長さ：ログの長さ / 信号の長さ（≈1.00。1.03 などなら再生の時間ずれ）
@@ -23,7 +23,6 @@ check_pm_data.py — 10/9 の測定直後に「データが使えるか」をそ
 from __future__ import annotations
 
 import argparse
-import glob
 import os
 import re
 import sys
@@ -33,14 +32,16 @@ import pandas as pd
 
 DT = 0.005
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TS = os.path.join(ROOT, "test_signals")
+TS = os.path.join(ROOT, "signals")   # 入力信号
+sys.path.insert(0, os.path.join(ROOT, "src"))
+from repo_paths import glob_measured  # noqa: E402
 PHYS = {"DF": "meas_pres_F", "F": "meas_pres_DF", "G": "meas_pres_G"}   # 入れ替わりを戻す
 
 
 def latest(name):
-    fs = sorted(glob.glob(os.path.join(TS, f"data_{name}_*.csv")), key=os.path.getmtime)
+    fs = sorted(glob_measured(f"data_{name}_*.csv"), key=os.path.getmtime)
     if not fs:
-        sys.exit(f"[エラー] test_signals/data_{name}_*.csv がありません")
+        sys.exit(f"[エラー] data/<user>/<venue>/playback_*/data_{name}_*.csv がありません")
     return fs[-1]
 
 

@@ -42,5 +42,5 @@ python3 tools/check_models.py
 python3 src/deploy_policy.py --model BINARY/scratch_seed1 --midi songs/test_single4_bpm60.mid --mock
 ```
 
-出力は `data/binary_<日付>/` に出る。`.json` の `action_mode` と `cmd_binary_ok` で、
+出力は `data/<user>/<venue>/binary_<日付>/` に出る（`--user` / `--venue` か環境変数 `PORCARO_USER` / `PORCARO_VENUE`）。`.json` の `action_mode` と `cmd_binary_ok` で、
 2値で動かしたことと、実際に送った指令が 0 / p_max だけだったことを後から確認できる。

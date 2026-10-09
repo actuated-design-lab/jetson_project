@@ -1,7 +1,7 @@
 '''
 generate_test_signals.py (v2)
 Target: Generate Exp1-8 test signals for Sim-to-Real Calibration.
-Usage: python IROS/verification/generate_test_signals.py
+Usage: python3 tools/generate_test_signals.py
 '''
 import numpy as np
 import pandas as pd
@@ -9,7 +9,7 @@ from scipy.signal import chirp
 import os
 
 # --- 設定 ---
-OUTPUT_DIR = "IROS/test_signals"
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "signals")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # 変更箇所: 高速動作(Exp6,8)に対応するため分解能を向上

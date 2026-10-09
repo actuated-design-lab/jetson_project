@@ -17,6 +17,9 @@ IROS時と同一。
   python3 src/deploy_policy.py --model RAL/E  --midi songs/gmd_02_mid_bpm105.mid --trial 3
   python3 src/deploy_policy.py --model IROS/D --midi songs/test_double_bpm120.mid --mock
   python3 src/deploy_policy.py --list
+
+出力先は data/<user>/<venue>/<group>_<日付>/。user / venue は --user / --venue か
+環境変数 PORCARO_USER / PORCARO_VENUE で指定する（src/repo_paths.py）。
 """
 
 from __future__ import annotations
@@ -27,7 +30,6 @@ import os
 import subprocess
 import sys
 import time
-from datetime import date
 
 import numpy as np
 import pandas as pd
@@ -40,6 +42,7 @@ from microlabbox import (MockLink, SensorReceiver, SENSOR_RATE_HZ,  # noqa: E402
 from midi_rhythm_generator import MidiRhythmGenerator  # noqa: E402
 from model_registry import (REPO_ROOT, PolicyRunner, list_models,  # noqa: E402
                             load_manifest, resolve)
+from repo_paths import add_user_venue_args, require_user_venue, run_dir  # noqa: E402
 
 QD_CLIP = 20.0   # 実機ノイズ対策の角速度クリップ [rad/s]（sim には無い。README参照）
 
@@ -52,7 +55,8 @@ def parse_args():
     p.add_argument("--trial", type=int, default=1, help="試行番号（ログに記録）")
     p.add_argument("--port", type=str, default=None, help="シリアルポート")
     p.add_argument("--baud", type=int, default=None, help="ボーレート")
-    p.add_argument("--out", type=str, default=None, help="出力ディレクトリ")
+    p.add_argument("--out", type=str, default=None,
+                   help="出力ディレクトリ（省略時は data/<user>/<venue>/<group>_<日付>/）")
     p.add_argument("--verify", action="store_true", help="駆動しない確認モード")
     p.add_argument("--mock", action="store_true", help="実機なしのドライラン")
     p.add_argument("--no-input", action="store_true", help="ENTER待ちをしない")
@@ -64,8 +68,9 @@ def parse_args():
                    help="USB変換の溜め込み時間[ms]。1 または 16。省略時は変更しない")
     p.add_argument("--action_mode", choices=["continuous", "binary"], default=None,
                    help="圧力指令の出し方を manifest から上書きする。binary = 電磁弁(0 / p_max)。"
-                        "例: 連続値で学習したモデルを2値で動かす比較。binary の出力は既定で data/binary_<日付>/ に分ける")
+                        "例: 連続値で学習したモデルを2値で動かす比較。binary の出力は既定で data/<user>/<venue>/binary_<日付>/ に分ける")
     p.add_argument("--list", action="store_true", help="manifest のモデル一覧を表示して終了")
+    add_user_venue_args(p)
     return p.parse_args()
 
 
@@ -272,10 +277,11 @@ class Deployer:
             dc = pd.DataFrame(self.cmd_logs).rename(columns={"cmd_time": "time"})
             df = pd.merge_asof(df, dc, on="time", direction="backward")
 
-        # 既定の出力先: data/<group>_<日付>/。2値で動かしたランは、連続値の実験フォルダ
-        # （data/ral_* など）に混ざらないよう、どのモデルでも data/binary_<日付>/ に出す。
+        # 既定の出力先: data/<user>/<venue>/<group>_<日付>/。2値で動かしたランは、連続値の実験フォルダ
+        # （ral_* など）に混ざらないよう、どのモデルでも binary_<日付>/ に出す。
+        # user / venue は main() で起動時に確定済み（実験の後で止まらないように）。
         out_group = "binary" if self.spec.action_mode == "binary" else self.spec.group.lower()
-        out_dir = a.out or os.path.join(REPO_ROOT, "data", f"{out_group}_{date.today():%Y%m%d}")
+        out_dir = a.out or run_dir(a.user, a.venue, out_group)
         os.makedirs(out_dir, exist_ok=True)
         midi_name = os.path.splitext(os.path.basename(a.midi))[0]
         tag = "verify" if a.verify else f"{self.spec.group}-{self.spec.name}"
@@ -358,6 +364,8 @@ def main():
     if not args.model or not args.midi:
         print("--model と --midi は必須です（一覧は --list）", file=sys.stderr)
         sys.exit(2)
+    if not args.out:
+        args.user, args.venue = require_user_venue(args.user, args.venue)
     Deployer(args).run()
 
 

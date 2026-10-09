@@ -12,14 +12,15 @@ def load(f, th=0.05):
     if bad.any(): u[bad] = np.interp(np.flatnonzero(bad), np.flatnonzero(~bad), u[~bad])
     i0 = np.argmax(u > th); return u[i0:], d.meas_pres_F.values[i0:]   # 物理DF = meas_pres_F
 
-STEP = ["test_signals/data_echo_grid_1790668422.csv", "test_signals/data_echo_steps_1790667361.csv",
-        "test_signals/data_echo_steps_1790666997.csv", "test_signals/data_echo_bigstep_1790749923.csv"]
-SINE = ["test_signals/data_echo_sine_1790749662.csv"]
-VAL = {"ランダムな段": "test_signals/data_pm_rand_1791267082.csv",
-       "正弦（テスト動作）": glob.glob("test_signals/data_tm_C_sine_*.csv")[0],
-       "拮抗（テスト動作）": glob.glob("test_signals/data_tm_D_antagonist_*.csv")[0],
-       "打撃指令の再生 s2": "test_signals/data_tm_E_dbl160_seed2_1791183686.csv",
-       "打撃指令の再生 s3": "test_signals/data_tm_E_dbl160_seed3_1791183707.csv"}
+from repo_paths import glob_measured  # noqa: E402  （find_measured は compare_pressure_models から）
+STEP = [find_measured("data_echo_grid_1790668422.csv"), find_measured("data_echo_steps_1790667361.csv"),
+        find_measured("data_echo_steps_1790666997.csv"), find_measured("data_echo_bigstep_1790749923.csv")]
+SINE = [find_measured("data_echo_sine_1790749662.csv")]
+VAL = {"ランダムな段": find_measured("data_pm_rand_1791267082.csv"),
+       "正弦（テスト動作）": glob_measured("data_tm_C_sine_*.csv")[0],
+       "拮抗（テスト動作）": glob_measured("data_tm_D_antagonist_*.csv")[0],
+       "打撃指令の再生 s2": find_measured("data_tm_E_dbl160_seed2_1791183686.csv"),
+       "打撃指令の再生 s3": find_measured("data_tm_E_dbl160_seed3_1791183707.csv")}
 
 def fit(files):
     E = [load(f) for f in files]

@@ -30,7 +30,7 @@ N サンプル平均すると振幅推定の誤差は σ·sqrt(2/N) まで落ち
 使い方
 ------
   python tools/analyze_volume_coupling.py <log.csv> \
-      --annot tools/test_signals/exc_volume_coupling_annotated.csv
+      --annot signals/exc_volume_coupling_annotated.csv
 """
 
 from __future__ import annotations

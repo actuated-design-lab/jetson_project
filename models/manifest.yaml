@@ -36,7 +36,7 @@ IROS:
     frame_stack: 1
     label: "A: LSTM, lookahead=0.1s"
     legacy_name: modelD.onnx
-    note: "IROS実機データ IROS/deploy_legacyD/ に対応"
+    note: "IROS実機データ data/user0/iros2026/deploy_legacyD/ に対応"
   B:
     file: IROS/modelB.onnx
     arch: lstm
@@ -44,7 +44,7 @@ IROS:
     frame_stack: 1
     label: "B: LSTM, lookahead=0.5s"
     legacy_name: modelB.onnx
-    note: "原論文の主役。IROS/deploy_legacyB/ に対応（旧名と一致）"
+    note: "原論文の主役。data/user0/iros2026/deploy_legacyB/ に対応（旧名と一致）"
   C:
     file: IROS/modelC.onnx
     arch: lstm
@@ -52,7 +52,7 @@ IROS:
     frame_stack: 1
     label: "C: LSTM, lookahead=1.0s"
     legacy_name: modelA.onnx
-    note: "IROS実機データ IROS/deploy_legacyA/ に対応"
+    note: "IROS実機データ data/user0/iros2026/deploy_legacyA/ に対応"
   D:
     file: IROS/modelD.onnx
     arch: mlp
@@ -60,7 +60,7 @@ IROS:
     frame_stack: 1
     label: "D: MLP, lookahead=0.5s"
     legacy_name: modelC.onnx
-    note: "記憶なしMLP。IROS/deploy_legacyC/ に実機データあり"
+    note: "記憶なしMLP。data/user0/iros2026/deploy_legacyC/ に実機データあり"
 
 # -----------------------------------------------------------------------------
 # RA-L用にexportするモデル置き場（これから埋める）
@@ -272,7 +272,7 @@ RAL:
 
 # -----------------------------------------------------------------------------
 # 電磁弁（2値）版（sim: porcaro_2026 のタスク Porcaro-DR-Discrete-user0）
-#   出力先の既定は data/binary_<日付>/（連続値の data/ral_* とは混ざらない）。
+#   出力先の既定は data/<user>/<venue>/binary_<日付>/（連続値の ral_* とは混ざらない）。
 #   export と登録の手順は models/BINARY/README.md。ONNX を置いたらコメントを外す。
 #   連続値で学習したモデルをそのまま2値で動かす比較は、manifest に足さずに
 #     python3 src/deploy_policy.py --model RAL/B_seed1 --action_mode binary ...

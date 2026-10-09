@@ -20,7 +20,7 @@ gen_pm_signals_1009.py — JFPS 圧力モデル再同定（しきい値）用の
 すべて DF 以外は F=0.10, G=0.30 固定（pm_fg を除く）。9/29–30 のエコー付きデータと同じ条件。
 各ファイルの最初と最後に DF の同期ステップ（0.10→0.30→0.10）を入れる（エコーでの時刻合わせ用）。
 
-出力: test_signals/<name>.csv と <name>_annotated.csv（segment 列つき, 50 Hz）
+出力: signals/<name>.csv と <name>_annotated.csv（segment 列つき, 50 Hz）
       run_signal_playback.py でそのまま流せる。
 
 使い方:
@@ -36,7 +36,7 @@ import pandas as pd
 DT = 0.02
 REST = (0.10, 0.10, 0.30)          # DF, F, G
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "test_signals")
+OUT = os.path.join(ROOT, "signals")
 
 
 class Seq:
