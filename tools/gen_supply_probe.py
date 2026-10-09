@@ -21,7 +21,7 @@ import pandas as pd
 
 DT = 0.02
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TS = os.path.join(ROOT, "test_signals")
+TS = os.path.join(ROOT, "signals")
 G_PROBE = 0.60
 
 

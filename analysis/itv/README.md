@@ -1,6 +1,6 @@
 # ITV（電空レギュレータ）のしきい値を入れた圧力モデル — 解析一式（2026/10/8）
 
-実機データ（このリポジトリの `test_signals/`）を読むだけで、sim の出力は使わない。別の場所のデータを読むときだけ `JETSON_PROJECT` を指定。
+実機データ（このリポジトリの `data/*/*/playback_*/` の実測と `signals/` の入力信号）を読むだけで、sim の出力は使わない。別の場所のデータを読むときだけ `JETSON_PROJECT` を指定。
 numba・scipy・pandas・matplotlib が必要（torch は不要）。
 
 ```

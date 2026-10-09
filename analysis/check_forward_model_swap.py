@@ -21,8 +21,8 @@ meas_pres_DF と meas_pres_F が入れ替わっていることが分かった
 ログの 200 Hz（dt = 5 ms）でそのまま回す。
 
 使い方:
-  python analysis/check_forward_model_swap.py data/ral_20260803
-  python analysis/check_forward_model_swap.py data/ral_20260803 --out out/jfps/fwd_swap.csv
+  python analysis/check_forward_model_swap.py data/user0/ral2026/ral_20260803
+  python analysis/check_forward_model_swap.py data/user0/ral2026/ral_20260803 --out data/user0/jfps2026/fwd_swap.csv
 """
 
 from __future__ import annotations

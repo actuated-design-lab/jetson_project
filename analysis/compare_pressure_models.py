@@ -18,6 +18,8 @@ from scipy.optimize import least_squares
 DT = 0.005
 PA = 0.1013
 sys.path.insert(0, "analysis")
+sys.path.insert(0, "src")
+from repo_paths import find_measured  # noqa: E402
 from check_forward_model_swap import TAU_2D, DEAD_2D  # noqa: E402
 
 G = np.linspace(0, 0.6, 7)
@@ -117,9 +119,9 @@ def metr(p, m):
 # ------------------------------------------------------------------ data
 def load_echo():
     out = []
-    for f in ["test_signals/data_echo_grid_1790668422.csv",
-              "test_signals/data_echo_steps_1790667361.csv",
-              "test_signals/data_echo_steps_1790666997.csv"]:
+    for f in [find_measured("data_echo_grid_1790668422.csv"),
+              find_measured("data_echo_steps_1790667361.csv"),
+              find_measured("data_echo_steps_1790666997.csv")]:
         d = pd.read_csv(f)
         u = d.flag.values.astype(float)
         i0 = np.argmax(u > 0.05)          # 最初の指令が届く前（flag=0）は捨てる
@@ -131,8 +133,8 @@ def load_feb():
     out = []
     for e, k in [("exp1_static_hysteresis", 1.027), ("exp2_step_response", 1.032),
                  ("exp3_frequency_sweep", 1.030)]:
-        d = pd.read_csv(glob.glob(f"IROS/measured/data_{e}_*.csv")[0])
-        s = pd.read_csv(f"test_signals/{e}.csv")
+        d = pd.read_csv(glob.glob(f"data/user0/iros2026/measured/data_{e}_*.csv")[0])
+        s = pd.read_csv(f"signals/{e}.csv")
         tc = np.arange(0, s.time.iloc[-1] + 0.02, DT)
         u = np.interp(np.floor(tc / 0.02) * 0.02, s.time, s.cmd_pressure_DF)
         m = np.interp(tc, d.time.values / k, d.meas_pres_DF.values)
@@ -142,7 +144,7 @@ def load_feb():
 
 def load_ral():
     out = []
-    for f in sorted(glob.glob("data/ral_20260803/*.csv")):
+    for f in sorted(glob.glob("data/user0/ral2026/ral_20260803/*.csv")):
         if "summary" in f:
             continue
         d = pd.read_csv(f)

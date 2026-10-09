@@ -48,6 +48,7 @@ JFPS 2026秋。「速くて小さい指令が通らない」しきい値（9/30 
 ```
 cd /data/jetson_project
 git pull
+export PORCARO_USER=user0 PORCARO_VENUE=jfps2026   # 実測の保存先 data/user0/jfps2026/playback_<日付>/
 cat /sys/bus/usb-serial/devices/ttyUSB0/latency_timer      # 1
 python tools/run_signal_playback.py pm_smallstep
 python tools/check_pm_data.py pm_smallstep                 # ★ が出たら止めて確認
@@ -73,7 +74,7 @@ done
 
 ホストでいつもどおり chown してから
 ```
-git add test_signals/data_pm_*.csv
+git add data/user0/jfps2026/playback_*/
 git commit -m "JFPS 10/9: pressure model re-identification data"
 git push
 ```
@@ -103,11 +104,12 @@ git push
 ```
 cd /data/jetson_project
 git pull
+export PORCARO_USER=user0 PORCARO_VENUE=jfps2026   # 実測の保存先 data/user0/jfps2026/playback_<日付>/
 for s in pm_rev pm_ch_F pm_ch_G; do
   python tools/run_signal_playback.py $s && python tools/check_pm_data.py $s; sleep 5
 done
 ```
-終わったらコンテナを出て、ホストで chown → `git add test_signals/data_pm_*.csv` → commit → push。
+終わったらコンテナを出て、ホストで chown → `git add data/user0/jfps2026/playback_*/` → commit → push。
 
 ## `check_pm_data.py` の見方（2回目）
 - `pm_rev`：2段目に対して 200 ms 後までに動いた割合。反転（rev）と継続（cont）の**平均**を見る。線形なら d・h によらずほぼ一定（O モデルの合成データで 0.8〜0.9）。小さい d・短い h で平均が下がれば、反転のしきい値

@@ -1,8 +1,8 @@
 # =============================================================================
 # experiment_plan_EvsB_check.yaml — 第3セッション（E vs B の決着だけ、30ラン）
 #
-#   python3 tools/run_experiment_batch.py --plan tools/experiment_plan_EvsB_check.yaml --dry_run
-#   python3 tools/run_experiment_batch.py --plan tools/experiment_plan_EvsB_check.yaml --shuffle --seed 2
+#   python3 tools/run_experiment_batch.py --plan tools/plans/experiment_plan_EvsB_check.yaml --dry_run
+#   python3 tools/run_experiment_batch.py --plan tools/plans/experiment_plan_EvsB_check.yaml --shuffle --seed 2
 #
 # ■ 目的
 #   セッション1で観測された E > B (p=0.008) が、

@@ -11,9 +11,9 @@ gen_test_motions.py — JFPS 柱③「シミュレータで実機の動作を再
                      （同定は 1/2/3/5/6/8 Hz・中心 0.15/0.30/0.45 なので重ならない）
   tm_D_antagonist  : DF と F を逆相で振る（1 / 2 / 3 Hz）、同相で上げる（共収縮）、
                      グリップを振る
-  tm_E_<song>_<seed> : RA-L 実機ラン（data/ral_20260803）の方策の指令列をそのまま開ループで流す
+  tm_E_<song>_<seed> : RA-L 実機ラン（data/user0/ral2026/ral_20260803）の方策の指令列をそのまま開ループで流す
 
-出力: test_signals/<name>.csv と <name>_annotated.csv（segment 列つき）
+出力: signals/<name>.csv と <name>_annotated.csv（segment 列つき）
       run_signal_playback.py と、シミュレータ側の replay_open_loop.py の両方でそのまま使える。
 
 安全: 指令は 0〜0.6 MPa（方策が普段使う範囲）。両筋 0.35 MPa 以上の共収縮は 3 s 以内。
@@ -33,7 +33,7 @@ DT = 0.02
 REST = (0.10, 0.10, 0.30)          # DF, F, G
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-OUT = os.path.join(ROOT, "test_signals")
+OUT = os.path.join(ROOT, "signals")
 
 
 class Seq:
@@ -150,7 +150,7 @@ def motion_E():
     pick = [("test_double_bpm160", "RAL-E_seed2"), ("test_double_bpm160", "RAL-E_seed3"),
             ("gmd_03_high_bpm138", "RAL-E_seed2"), ("gmd_03_high_bpm138", "RAL-E_seed3")]
     for song, key in pick:
-        fs = sorted(glob.glob(os.path.join(ROOT, "data", "ral_20260803", f"deploy_{song}_{key}_trial01_*.csv")))
+        fs = sorted(glob.glob(os.path.join(ROOT, "data", "user0", "ral2026", "ral_20260803", f"deploy_{song}_{key}_trial01_*.csv")))
         if not fs:
             print(f"  [skip] {song} {key}: ログが見つかりません"); continue
         d = pd.read_csv(fs[0])

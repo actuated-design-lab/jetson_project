@@ -14,9 +14,10 @@ Jetson (Docker) ──serial 230400bps, BigEndian, header FFFF──> MicroLabBo
 
 ---
 
-## ディレクトリ構成（v3再編、2026-09）
+## ディレクトリ構成（v4再編、2026-10）
 
-全ファイルのパスはルートから3階層以内（`dir/dir/file` まで）。
+コードは `src/` `tools/` `analysis/`、実機で取ったデータはすべて `data/<user>/<venue>/` の下。
+`<user>` は porcaro_2026 と同じ番号（user0 = 美谷島、user1 = 王さん、…）、`<venue>` は学会・目的ごとのフォルダ。
 
 ```
 src/            実行コード（デプロイ本体）
@@ -24,41 +25,53 @@ src/            実行コード（デプロイ本体）
   model_registry.py         manifest読み込み・ONNX整合性検証・framestack・LSTM隠れ状態
   microlabbox.py            シリアル送受信（+ 実機なしドライラン用の疑似デバイス）
   midi_rhythm_generator.py  MIDI → 目標力軌道（sim側と等価）
+  repo_paths.py             ★データの置き場所の決まり（--user / --venue / 環境変数）
 
 models/
   manifest.yaml   ★モデル定義の唯一の真実（論文名 A〜E ⇔ ファイル ⇔ パラメータ）
   IROS/           IROS投稿時にデプロイした学習済みモデル（論文名にリネーム済み）
   RAL/            RA-L用にexportするモデル置き場 → models/RAL/README.md
   BINARY/         電磁弁（2値）版モデル置き場 → models/BINARY/README.md
+  SI/             王さん（SI）のモデル
 
 songs/          入力MIDI（test_*, gmd_*）
-test_signals/   ポリシー無しの指令信号CSV（exp1〜8）
+signals/        ポリシー無しで再生する入力信号CSV（exp*, echo_*, pm_*, tm_*）。実測はここに置かない
 tools/          データ収集・信号生成・疎通確認・検証スクリプト（serial_test/ 含む）
-analysis/       図の生成・解析
+  plans/            run_experiment_batch.py の実験計画 YAML
+analysis/       図の生成・解析（itv/ = 圧力モデルの同定）
 
-data/           ★研究の実機ログ（これからのRUN）。1セッション1フォルダ、中はフラット
-  ral_YYYYMMDD/      デプロイ実行の出力先（下記「出力先の既定値」参照）
-  ral_YYYYMMDD_b/    同日に複数セッションがある場合の2つ目以降
-  ral_quarantine/    力センサ死亡が疑われ集計から除外したラン（IROS期モデルで実施したもの含む）
-  binary_YYYYMMDD/   2値（action_mode: binary）で動かしたラン。どのモデルでも2値ならここに出る
-
-out/            集計CSV・図（analysis/ の出力）
-  ral/               summary_*.csv, strikes_*.csv など
-
-IROS/           ★IROS投稿時点の凍結アーカイブ（読み取り専用）→ IROS/README.md
-  deploy_legacyA〜D/, deploy_DRfolder/, deploy_noDRfolder/  実機デプロイ結果（旧フォルダ名）
-  sysid_20260111/, sysid_misc/    システム同定の生ログ
-  verification/      通信・センサ検証ログ
-  measured/           指令信号CSV再生時の実測データ
-  figures_paper/, figures_analysis/  論文図・解析図
-  legacy_code/        当時のデプロイスクリプト（参照用）
-  models_pt/          当時の.ptチェックポイント（models/IROS/*.onnx がデプロイ用実体）
+data/           ★実機で取ったデータ。data/<user>/<venue>/<種類>_<日付>/ に1セッション1フォルダ
+  user0/
+    iros2026/        IROS投稿時点の凍結アーカイブ（読み取り専用）→ data/user0/iros2026/README.md
+                       deploy_legacyA〜D/, deploy_DRfolder/, deploy_noDRfolder/  実機デプロイ結果（旧フォルダ名）
+                       sysid_20260111/, sysid_misc/  同定の生ログ ／ verification/ ／ measured/（信号再生の実測）
+                       figures_paper/, figures_analysis/ ／ legacy_code/ ／ models_pt/（当時の .pt）
+    ral2026/         ral_20260731, _b, _c, ral_20260803（デプロイ）, ral_quarantine（力センサ異常で除外）,
+                     summary/（集計CSV）
+    jfps2026/        jfps_20260930*（デプロイ）, playback_<日付>/（信号再生の実測）,
+                     verification_<日付>/（verify_sensors.py）, pressure_swap_scan.csv
+  user1/
+    si/              si_<日付>/, iros_<日付>/（2026-06 の SI 実験）
 
 oc_demo/        オープンキャンパスデモ（コード不変）
   docs/, dist/        旧ルート直下にあった設計メモ・配布物
 midi/           OCデモ用MIDI（`oc_demo/tools/make_demo_midi.py` の出力先。動かさない）
 run_oc_demo.sh  OCデモ起動スクリプト（Jetsonで直接叩く。動かさない）
 ```
+
+### データの置き場所のルール
+
+- 実機データを書くスクリプト（`deploy_policy.py` / `run_signal_playback.py` / `verify_sensors.py` /
+  `run_experiment_batch.py`）は、**誰の・どの学会のデータか**が決まらないと起動時に止まる。
+  `--user` / `--venue` で渡すか、セッションの最初に環境変数で指定する:
+  ```bash
+  export PORCARO_USER=user0 PORCARO_VENUE=jfps2026
+  ```
+- 種類ごとのフォルダ名: `ral_` `iros_` `si_`（モデルの group）／ `binary_`（2値で動かしたラン）／
+  `playback_`（信号再生）／ `verification_`（センサ確認）。後ろはすべて実行日 `YYYYMMDD`。
+- 新しい学会・目的は `--venue` に新しい名前を渡せばフォルダができる（既存と綴りが違うと別フォルダに
+  なるので、起動時の「新しく作ります」の表示に注意）。
+- `data/` 直下とリポジトリのルートには何も置かない。
 
 ---
 
@@ -106,6 +119,9 @@ sudo docker run --runtime nvidia -it --rm --network host \
 # 登録済みモデルの一覧と整合性
 python3 src/deploy_policy.py --list
 
+# データの持ち主と学会を指定（セッションごとに1回。--user / --venue でも可）
+export PORCARO_USER=user0 PORCARO_VENUE=jfps2026
+
 # 実機なしのドライラン（制御ループ・obs構築・推論を通しで確認）
 python3 src/deploy_policy.py --model IROS/B --midi songs/test_single4_bpm60.mid --mock
 
@@ -113,21 +129,21 @@ python3 src/deploy_policy.py --model IROS/B --midi songs/test_single4_bpm60.mid 
 python3 src/deploy_policy.py --model RAL/E --midi songs/gmd_02_mid_bpm105.mid --trial 1
 
 # 2値（電磁弁）で動かす。manifest で action_mode: binary のモデルはそのまま、
-# 連続値で学習したモデルを2値で動かすときは --action_mode binary（出力は data/binary_<日付>/）
+# 連続値で学習したモデルを2値で動かすときは --action_mode binary（出力は data/<user>/<venue>/binary_<日付>/）
 python3 src/deploy_policy.py --model BINARY/scratch_seed1 --midi songs/test_single4_bpm60.mid --mock
 python3 src/deploy_policy.py --model RAL/B_seed1 --action_mode binary --midi songs/test_single4_bpm60.mid --mock
 
 # 駆動せずに目標軌道だけ確認
 python3 src/deploy_policy.py --model IROS/B --midi songs/test_single4_bpm60.mid --verify
 
-# ポリシー無しで指令信号CSVを再生（sim-real同定用）
-python3 tools/run_signal_playback.py exp2_step_response.csv
+# ポリシー無しで指令信号CSVを再生（sim-real同定用）。入力は signals/、実測は data/<user>/<venue>/playback_<日付>/
+python3 tools/run_signal_playback.py exp2_step_response
 ```
 
-出力先（既定）は `data/<group小文字>_<実行開始日 YYYYMMDD>/`（例: `data/ral_20260922/`）。
+出力先（既定）は `data/<user>/<venue>/<group小文字>_<実行開始日 YYYYMMDD>/`（例: `data/user0/ral2026/ral_20260922/`）。
 同日に複数セッションを走らせて既存フォルダと衝突する場合は、手で `_b` `_c` ... を付けて
-退避してから次のセッションを始めること（`data/ral_20260731` 〜 `_c` の前例を参照）。
-`--out` で明示的に指定すれば既定値は使わない。
+退避してから次のセッションを始めること（`data/user0/ral2026/ral_20260731` 〜 `_c` の前例を参照）。
+`--out` で明示的に指定すれば既定値は使わない（このときは `--user` / `--venue` は不要）。
 ファイル名は `deploy_<曲>_<group>-<X>_trial<NN>_<unixtime>.csv` と、
 同名の `.json`（モデル・trial番号・パケット受信率・git rev などの実行条件）。
 2値で動かしたランは `.json` に `action_mode: binary` と、送った指令が 0 / p_max だけだったか（`cmd_binary_ok`）が残る。
@@ -174,26 +190,20 @@ sudo python3 tools/collect_real_data.py --mode hysteresis   # 1分（ゆっく�
 
 ---
 
-## Jetson側での反映手順（v3再編の取り込み）
+## Jetson側での反映手順（v4再編の取り込み、2026-10）
 
-1. **pull前に、Jetson上の未コミットのログ（`results/` 以下など、v2時代の場所も含む）を
-   commit & push しておく。** 再編PRをmainにマージ後、Jetson側で `git pull` すると
-   `results/` は消えて `data/` に置き換わる。ローカルにしか無いログがあると
-   `git mv` の履歴と衝突・消失する可能性がある。
-2. `git pull` 後、モデル一覧が正しく引けるか確認:
+1. **pull前に、Jetson上の未コミットのログを commit & push しておく**（`git status` で確認）。
+   追跡済みのファイルは `git pull` で新しい場所に移る。
+2. `git pull` の後、まだ commit していなかったログ（旧 `test_signals/data_*.csv`、`data/ral_*` など）を
+   同じ規則で移す:
    ```bash
-   python3 src/deploy_policy.py --list
+   python3 tools/migrate_to_v4.py          # 何が動くかの表示だけ
+   python3 tools/migrate_to_v4.py --apply  # 実行（衝突があれば止まって一覧が出る）
    ```
-3. `--mock` で出力先が新しい `data/<group>_<今日>/` に出ることを確認:
+3. 出力先の確認（実機は動かない）:
    ```bash
+   export PORCARO_USER=user0 PORCARO_VENUE=jfps2026
    python3 src/deploy_policy.py --model RAL/E --midi songs/test_single8_bpm120.mid --mock
+   # → data/user0/jfps2026/ral_<今日>/ に出ればOK
    ```
-4. `--resume` を使うバッチが再開できるか確認（Windows開発機では onnxruntime/torch/pyserial/mido
-   が無くこの部分は未検証。**Jetson側で必ず確認すること**）:
-   ```bash
-   python3 tools/run_experiment_batch.py --plan tools/experiment_plan.yaml --dry_run --resume
-   ```
-5. `run_oc_demo.sh` / `oc_demo/` は位置・中身とも変更していないので、そのまま動くはず。
-   念のため `./run_oc_demo.sh` が `bad interpreter` エラーになる場合は `bash run_oc_demo.sh`
-   で実行する（リポジトリ全体にCRLFが混入しているファイルがあり、`run_oc_demo.sh` 自体は
-   今回のスコープ外として中身を変更していないため）。
+4. `run_oc_demo.sh` / `oc_demo/` は位置・中身とも変更していない。

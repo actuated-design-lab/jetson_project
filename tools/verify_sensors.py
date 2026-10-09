@@ -4,12 +4,17 @@ import time
 import csv
 import threading
 import os
+import sys
+import argparse
 from datetime import datetime
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
+from repo_paths import add_user_venue_args, require_user_venue, run_dir  # noqa: E402
 
 # --- 設定 (環境に合わせて変更してください) ---
 SERIAL_PORT = '/dev/ttyUSB0'
 BAUD_RATE = 115200
-CSV_DIR = "logs_verification"
+CSV_DIR = None  # 起動時に data/<user>/<venue>/verification_<日付>/ に決まる
 
 # --- データ仕様定義 ---
 # 受信 (MicroLabBox -> Jetson): 6個 (double x 6 = 48 bytes)
@@ -113,8 +118,14 @@ def serial_worker():
             ser.close()
 
 def main():
-    global current_cmd, is_running
-    
+    global current_cmd, is_running, CSV_DIR
+
+    ap = argparse.ArgumentParser(description="Jetson-MicroLabBox 信号チェッカー")
+    add_user_venue_args(ap)
+    a = ap.parse_args()
+    user, venue = require_user_venue(a.user, a.venue)
+    CSV_DIR = run_dir(user, venue, "verification")
+
     t = threading.Thread(target=serial_worker)
     t.start()
     

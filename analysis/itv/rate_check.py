@@ -17,7 +17,7 @@ def edges(p, lev=0.3):
     return np.flatnonzero((p[:-1] < lev) & (p[1:] >= lev)) * DT
 rows = []
 for n in ["tm_E_dbl160_seed2", "tm_E_dbl160_seed3", "tm_E_gmd138_seed2", "tm_E_gmd138_seed3"]:
-    s = pd.read_csv(f"test_signals/{n}.csv")
+    s = pd.read_csv(f"signals/{n}.csv")
     for c in ["DF", "F", "G"]:
         u50 = s[f"cmd_pressure_{c}"].values
         p0 = run("O", O, up200(u50)); e0 = edges(p0)

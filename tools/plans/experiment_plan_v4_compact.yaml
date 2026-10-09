@@ -1,8 +1,8 @@
 # =============================================================================
 # experiment_plan_v4_compact.yaml — 第4セッション（全モデル一括、75ラン）
 #
-#   python3 tools/run_experiment_batch.py --plan tools/experiment_plan_v4_compact.yaml --dry_run
-#   python3 tools/run_experiment_batch.py --plan tools/experiment_plan_v4_compact.yaml --shuffle --seed 3
+#   python3 tools/run_experiment_batch.py --plan tools/plans/experiment_plan_v4_compact.yaml --dry_run
+#   python3 tools/run_experiment_batch.py --plan tools/plans/experiment_plan_v4_compact.yaml --shuffle --seed 3
 #
 # ■ 設計方針
 #   5モデル(A/B/C/D/E) × 5seed × 3曲 × 1trial = 75ラン（約1.25時間）

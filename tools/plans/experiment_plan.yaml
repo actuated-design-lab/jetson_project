@@ -1,8 +1,8 @@
 # =============================================================================
 # experiment_plan.yaml — RA-L 実機検証の実験計画
 #
-#   python3 tools/run_experiment_batch.py --plan tools/experiment_plan.yaml --dry_run
-#   python3 tools/run_experiment_batch.py --plan tools/experiment_plan.yaml --shuffle
+#   python3 tools/run_experiment_batch.py --plan tools/plans/experiment_plan.yaml --dry_run
+#   python3 tools/run_experiment_batch.py --plan tools/plans/experiment_plan.yaml --shuffle
 #
 # 条件はsim側の評価マトリクスと揃えてある。
 # sim (porcaro_2026/eval_logs/eval_matrix_manifest.json) は現在この3条件が

@@ -1,16 +1,12 @@
 """
-Porcaro Robot: IROS 2026 Validation Experiment Runner (Async: Recv 200Hz / Send 50Hz)
+Porcaro Robot: 指令信号CSVの再生（ポリシー無し）(Async: Recv 200Hz / Send 50Hz)
 Target: Jetson Orin Nano + MicroLabBox
 
-python IROS/run_iros_validation.py exp1_static_hysteresis.csv
-python IROS/run_iros_validation.py exp2_step_response.csv
-python IROS/run_iros_validation.py exp3_frequency_sweep.csv
-python IROS/run_iros_validation.py exp4_drumming_task.csv
-python IROS/run_iros_validation.py exp5_amplitude_sweep.csv
-python IROS/run_iros_validation.py exp6_duration_sweep.csv
-python IROS/run_iros_validation.py exp7_stiffness_sweep.csv
-python IROS/run_iros_validation.py exp8_speed_sweep.csv
+入力は signals/<名前>.csv。実測（200Hz）は data/<user>/<venue>/playback_<日付>/data_<名前>_<unixtime>.csv に保存する。
+user / venue は --user / --venue か環境変数 PORCARO_USER / PORCARO_VENUE（src/repo_paths.py）。
 
+python3 tools/run_signal_playback.py exp2_step_response --user user0 --venue jfps2026
+python3 tools/run_signal_playback.py pm_ramp            # PORCARO_USER / PORCARO_VENUE を export 済みなら
 """
 import serial
 import struct
@@ -23,6 +19,9 @@ import os
 import sys
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(REPO_ROOT, "src"))
+from repo_paths import (add_user_venue_args, require_user_venue,  # noqa: E402
+                        run_dir, signal_path)
 
 # ==========================================
 # System Configuration
@@ -111,7 +110,8 @@ class SensorReceiver(threading.Thread):
         self.running = False
 
 class ExperimentController:
-    def __init__(self, csv_name):
+    def __init__(self, csv_name, user, venue):
+        self.user, self.venue = user, venue
         self.csv_path = self._resolve_path(csv_name)
         print(f"[Init] Loading Sequence: {self.csv_path}")
         self.cmd_df = pd.read_csv(self.csv_path)
@@ -126,11 +126,10 @@ class ExperimentController:
             sys.exit(1)
 
     def _resolve_path(self, name):
-        if not name.endswith('.csv'): name += '.csv'
-        path = os.path.join(REPO_ROOT, "test_signals", name)
+        path = signal_path(name)
         if os.path.exists(path): return path
         if os.path.exists(name): return os.path.abspath(name)
-        sys.exit(1)
+        sys.exit(f"[Error] 入力信号が見つかりません: {path}")
 
     def run(self):
         self.receiver.start()
@@ -205,12 +204,16 @@ class ExperimentController:
         )
 
         name = f"data_{os.path.splitext(os.path.basename(self.csv_path))[0]}_{int(time.time())}.csv"
-        path = os.path.join(os.path.dirname(self.csv_path), name)
+        out_dir = run_dir(self.user, self.venue, "playback")
+        os.makedirs(out_dir, exist_ok=True)
+        path = os.path.join(out_dir, name)
         df_merged.to_csv(path, index=False)
         print(f"\n[Saved] Reconstructed High-Res Log (200Hz) saved to:\n  -> {path}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("csv_name", type=str)
+    parser.add_argument("csv_name", type=str, help="signals/ の入力信号名（.csv は省略可）")
+    add_user_venue_args(parser)
     args = parser.parse_args()
-    ExperimentController(args.csv_name).run()
+    user, venue = require_user_venue(args.user, args.venue)
+    ExperimentController(args.csv_name, user, venue).run()

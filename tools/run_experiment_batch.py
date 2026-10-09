@@ -9,9 +9,9 @@ run_experiment_batch.py — 実機実験のバッチ実行（条件×モデル×
   * 実行順をシャッフルできる（--shuffle。リグの経時変化がモデル順と交絡するのを防ぐ）
 
 Usage:
-  python3 tools/run_experiment_batch.py --plan tools/experiment_plan.yaml --dry_run
-  python3 tools/run_experiment_batch.py --plan tools/experiment_plan.yaml --shuffle
-  python3 tools/run_experiment_batch.py --plan tools/experiment_plan.yaml --resume
+  python3 tools/run_experiment_batch.py --plan tools/plans/experiment_plan.yaml --dry_run
+  python3 tools/run_experiment_batch.py --plan tools/plans/experiment_plan.yaml --shuffle
+  python3 tools/run_experiment_batch.py --plan tools/plans/experiment_plan.yaml --resume
 """
 
 from __future__ import annotations
@@ -28,6 +28,8 @@ import time
 import yaml
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(REPO_ROOT, "src"))
+from repo_paths import DATA_DIR, add_user_venue_args, require_user_venue  # noqa: E402
 
 
 def load_plan(path: str) -> dict:
@@ -47,18 +49,18 @@ def build_jobs(plan: dict) -> list[dict]:
     return jobs
 
 
-def already_done(job: dict) -> bool:
-    """data/<group>_<日付>/ (日付は問わない) に同じ(model, song, trial)のCSVが既にあるか。"""
+def already_done(job: dict, user: str, venue: str) -> bool:
+    """data/<user>/<venue>/<group>_<日付>/ (日付は問わない) に同じ(model, song, trial)のCSVが既にあるか。"""
     group, name = job["model"].split("/")
     stem = os.path.splitext(os.path.basename(job["song"]))[0]
-    pattern = os.path.join(REPO_ROOT, "data", f"{group.lower()}_*",
+    pattern = os.path.join(DATA_DIR, user, venue, f"{group.lower()}_*",
                            f"deploy_{stem}_{group}-{name}_trial{job['trial']:02d}_*.csv")
     return bool(glob.glob(pattern))
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--plan", default=os.path.join(REPO_ROOT, "tools", "experiment_plan.yaml"))
+    ap.add_argument("--plan", default=os.path.join(REPO_ROOT, "tools", "plans", "experiment_plan.yaml"))
     ap.add_argument("--dry_run", action="store_true", help="実行せず一覧だけ表示")
     ap.add_argument("--resume", action="store_true", help="既に結果があるランを飛ばす")
     ap.add_argument("--shuffle", action="store_true", help="実行順をランダム化（推奨）")
@@ -67,7 +69,9 @@ def main():
     ap.add_argument("--force_scale", type=float, default=None)
     ap.add_argument("--swap_encoders", action="store_true",
                     help="手首/ハンド関節エンコーダの配線が逆のとき指定（全ランに適用）")
+    add_user_venue_args(ap)
     args = ap.parse_args()
+    user, venue = require_user_venue(args.user, args.venue)
 
     plan = load_plan(args.plan)
     jobs = build_jobs(plan)
@@ -78,7 +82,7 @@ def main():
 
     if args.resume:
         before = len(jobs)
-        jobs = [j for j in jobs if not already_done(j)]
+        jobs = [j for j in jobs if not already_done(j, user, venue)]
         print(f"[batch] resume: {before - len(jobs)} 件は完了済みとしてスキップ")
 
     print(f"\n=== 実験計画: {plan.get('name', '(無名)')} ===")
@@ -108,7 +112,7 @@ def main():
 
         cmd = [sys.executable, "src/deploy_policy.py",
                "--model", j["model"], "--midi", j["song"],
-               "--trial", str(j["trial"]), "--no-input"]
+               "--trial", str(j["trial"]), "--no-input", "--user", user, "--venue", venue]
         if args.force_scale is not None:
             cmd += ["--force_scale", str(args.force_scale)]
         if args.swap_encoders:
@@ -125,7 +129,8 @@ def main():
     print(f"\n=== 完了: 成功 {ok} / 失敗 {len(ng)} ===")
     for j in ng:
         print(f"  FAILED: {j['model']} {j['song']} trial{j['trial']}")
-    print("\n集計:  python3 analysis/strike_metrics.py data --summary out/ral/summary.csv")
+    print(f"\n集計:  python3 analysis/strike_metrics.py data/{user}/{venue} "
+          f"--summary data/{user}/{venue}/summary/summary.csv")
     return 0 if not ng else 1
 
 

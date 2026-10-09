@@ -16,9 +16,9 @@ check_encoder_wiring.py — 手首/ハンド関節エンコーダの配線が入
   検査対象でこの大小関係が反転していれば、配線が逆になっている。
 
 Usage:
-  python3 tools/check_encoder_wiring.py data/ral_20260731
-  python3 tools/check_encoder_wiring.py data/ral_20260731_b data/ral_20260731_c
-  python3 tools/check_encoder_wiring.py data/ral_20260731 --ref IROS/deploy_*
+  python3 tools/check_encoder_wiring.py data/user0/ral2026/ral_20260731
+  python3 tools/check_encoder_wiring.py data/user0/ral2026/ral_20260731_b data/user0/ral2026/ral_20260731_c
+  python3 tools/check_encoder_wiring.py data/user0/ral2026/ral_20260731 --ref data/user0/iros2026/deploy_*
 """
 
 from __future__ import annotations

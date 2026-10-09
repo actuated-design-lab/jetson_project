@@ -12,14 +12,14 @@ import pmeval as E
 from base_eval import sim_O
 from model_A import shape_cmd
 from model_BL import sim_BL
-TS = os.path.join(E.JP_DEFAULT, "test_signals") + "/"
+TS = os.path.join(E.JP_DEFAULT, "signals") + "/"   # 入力信号（実測は E.find_measured で data/ から探す）
 A = json.load(open(_HERE + "/fit_A.json")); BL = json.load(open(_HERE + "/fit_BL_w0.7.json")); O = np.array(A["O"])
 fg, ag, G = np.array(A["fg"]), np.array(A["ag"]), np.array(A["G"])
 thBL = [BL[k] for k in ["L","ki","kpp","d","km","cin","cout","ps","b","km_dn","kl"]]
 sims = {"O": lambda u,p0: sim_O(u,p0,*O), "A": lambda u,p0: sim_O(shape_cmd(u,A["tc"],A["W"],A["hk"],A["h0"],fg,ag,G),p0,*O),
         "BL": lambda u,p0: sim_BL(u,p0,*thBL)}
 def load(ch, fn):
-    d = pd.read_csv(TS+fn); sig = pd.read_csv(TS+f"pm_ch_{ch}_annotated.csv")
+    d = pd.read_csv(E.find_measured(fn, E.JP_DEFAULT)); sig = pd.read_csv(TS+f"pm_ch_{ch}_annotated.csv")
     fl = np.nan_to_num(d.flag.values.astype(float)); bad = np.abs(fl) > 1
     fl[bad] = np.interp(np.flatnonzero(bad), np.flatnonzero(~bad), fl[~bad])
     lag = E._echo_lag(fl, sig.cmd_pressure_DF.values)

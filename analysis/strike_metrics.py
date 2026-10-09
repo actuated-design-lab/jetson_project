@@ -27,13 +27,13 @@ sim側の正準実装 `porcaro_2026/analysis/harness/strike_extract.py::extract_
 
 Usage:
   # 1ファイル
-  python3 analysis/strike_metrics.py data/ral_20260731/deploy_xxx.csv
+  python3 analysis/strike_metrics.py data/user0/ral2026/ral_20260731/deploy_xxx.csv
 
   # ディレクトリ配下を再帰的に集計してサマリCSVを出す（data/ 全体でもよい）
-  python3 analysis/strike_metrics.py data --summary out/ral/summary.csv
+  python3 analysis/strike_metrics.py data/user0/ral2026 --summary data/user0/ral2026/summary/summary.csv
 
   # ゼロ点補正をかける
-  python3 analysis/strike_metrics.py data/ral_20260731 --force_offset -20.0
+  python3 analysis/strike_metrics.py data/user0/ral2026/ral_20260731 --force_offset -20.0
 """
 
 from __future__ import annotations
@@ -303,7 +303,9 @@ def main():
 
     if os.path.isdir(args.path):
         files = sorted(glob.glob(os.path.join(args.path, "**", "*.csv"), recursive=True))
-        files = [f for f in files if "summary" not in os.path.basename(f)]
+        # 集計結果（summary_*.csv、data/<user>/<venue>/summary/ の中身）は入力にしない
+        files = [f for f in files if "summary" not in os.path.basename(f)
+                 and f"{os.sep}summary{os.sep}" not in f]
     else:
         files = [args.path]
 

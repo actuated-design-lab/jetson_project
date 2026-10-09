@@ -1,8 +1,8 @@
 # =============================================================================
 # experiment_plan_lookahead.yaml — RA-L 実機検証 第2セッション（先読み軸）
 #
-#   python3 tools/run_experiment_batch.py --plan tools/experiment_plan_lookahead.yaml --dry_run
-#   python3 tools/run_experiment_batch.py --plan tools/experiment_plan_lookahead.yaml --shuffle --seed 1
+#   python3 tools/run_experiment_batch.py --plan tools/plans/experiment_plan_lookahead.yaml --dry_run
+#   python3 tools/run_experiment_batch.py --plan tools/plans/experiment_plan_lookahead.yaml --shuffle --seed 1
 #
 # 目的は2つ:
 #   (1) 先読み軸 A(0.1s) / B(0.5s) / C(1.0s) を実機で検証する。
