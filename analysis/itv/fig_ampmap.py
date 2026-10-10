@@ -35,7 +35,7 @@ for ch, fn in (("F", "data_pm_ch_F_1791270055.csv"), ("G", "data_pm_ch_G_1791270
     ar, ao = C.amps(u, m, seg), C.amps(u, p, seg)
     panels[ch] = pd.DataFrame([dict(a=a, f=f, real=ar[(a, f)], model=ao[(a, f)]) for (a, f) in ar])
 
-fig, axs = plt.subplots(1, 3, figsize=(6.7, 2.1), sharey=True)
+fig, axs = plt.subplots(1, 3, figsize=(6.7, 1.8), sharey=True)
 for ax, (ch, P) in zip(axs, panels.items()):
     for a in AMPS:
         g = P[np.isclose(P.a, a)].sort_values("f")
