@@ -278,24 +278,54 @@ RAL:
 #     python3 src/deploy_policy.py --model RAL/B_seed1 --action_mode binary ...
 #   でできる（ログのファイル名に -binary が付く）。
 # -----------------------------------------------------------------------------
-# BINARY:
-#   scratch_seed1:
-#     file: BINARY/binary_scratch_seed1.onnx
-#     arch: lstm
-#     lookahead_horizon: 0.5
-#     frame_stack: 1
-#     action_mode: binary
-#     binary_threshold: 0.5
-#     label: "binary: LSTM, lookahead=0.5s, trained from scratch"
-#     seed: 1
-#     checkpoint: model_1499.pt
-#   ft_from_B_seed1:
-#     file: BINARY/binary_ft_from_B_seed1.onnx
-#     arch: lstm
-#     lookahead_horizon: 0.5
-#     frame_stack: 1
-#     action_mode: binary
-#     binary_threshold: 0.5
-#     label: "binary: LSTM, lookahead=0.5s, fine-tuned from RA-L B seed1"
-#     seed: 1
-#     checkpoint: model_1499.pt
+BINARY:
+  ft_from_B_seed1:
+    file: BINARY/binary_ft_from_B_seed1.onnx
+    arch: lstm
+    lookahead_horizon: 0.5
+    frame_stack: 1
+    action_mode: binary
+    binary_threshold: 0.5
+    label: "binary: LSTM, lookahead=0.5s, fine-tuned from RA-L B seed1"
+    seed: 1
+    checkpoint: model_1499.pt
+  ft_from_B_seed2:
+    file: BINARY/binary_ft_from_B_seed2.onnx
+    arch: lstm
+    lookahead_horizon: 0.5
+    frame_stack: 1
+    action_mode: binary
+    binary_threshold: 0.5
+    label: "binary: LSTM, lookahead=0.5s, fine-tuned from RA-L B seed2"
+    seed: 2
+    checkpoint: model_1499.pt
+  ft_from_B_seed3:
+    file: BINARY/binary_ft_from_B_seed3.onnx
+    arch: lstm
+    lookahead_horizon: 0.5
+    frame_stack: 1
+    action_mode: binary
+    binary_threshold: 0.5
+    label: "binary: LSTM, lookahead=0.5s, fine-tuned from RA-L B seed3"
+    seed: 3
+    checkpoint: model_1499.pt
+  scratch_seed1:
+    file: BINARY/binary_scratch_seed1.onnx
+    arch: lstm
+    lookahead_horizon: 0.5
+    frame_stack: 1
+    action_mode: binary
+    binary_threshold: 0.5
+    label: "binary: LSTM, lookahead=0.5s, trained from scratch"
+    seed: 1
+    checkpoint: model_1499.pt
+  scratch_seed2:
+    file: BINARY/binary_scratch_seed2.onnx
+    arch: lstm
+    lookahead_horizon: 0.5
+    frame_stack: 1
+    action_mode: binary
+    binary_threshold: 0.5
+    label: "binary: LSTM, lookahead=0.5s, trained from scratch"
+    seed: 2
+    checkpoint: model_1499.pt
