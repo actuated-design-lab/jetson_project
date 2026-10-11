@@ -101,6 +101,9 @@ sudo date -s "$(wget -qSO- --max-redirect=0 google.com 2>&1 | grep Date: | cut -
 sudo modprobe ftdi_sio
 echo 0584 b050 | sudo tee /sys/bus/usb-serial/drivers/ftdi_sio/new_id
 
+# 1.5. レイテンシーのチェック　１ならおけ
+cat /sys/bus/usb-serial/devices/ttyUSB0/latency_timer
+
 # 2. コンテナ起動（ロボット接続時）
 sudo docker run --runtime nvidia -it --rm --network host \
     --device /dev/ttyUSB0 \

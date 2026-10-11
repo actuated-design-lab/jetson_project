@@ -1,0 +1,16 @@
+name: "2値版 実機確認 v1（5モデル × 2曲）"
+est_sec_per_run: 60
+cooldown_sec: 3
+
+blocks:
+  - name: "binary_all"
+    models:
+      - BINARY/ft_from_B_seed3
+      - BINARY/ft_from_B_seed1
+      - BINARY/ft_from_B_seed2
+      - BINARY/scratch_seed1
+      - BINARY/scratch_seed2
+    songs:
+      - songs/test_single4_bpm60.mid
+      - songs/test_single8_bpm120.mid
+    trials: 1
