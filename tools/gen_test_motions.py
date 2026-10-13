@@ -12,6 +12,10 @@ gen_test_motions.py — JFPS 柱③「シミュレータで実機の動作を再
   tm_D_antagonist  : DF と F を逆相で振る（1 / 2 / 3 Hz）、同相で上げる（共収縮）、
                      グリップを振る
   tm_E_<song>_<seed> : RA-L 実機ラン（data/user0/ral2026/ral_20260803）の方策の指令列をそのまま開ループで流す
+  id_static_cocontraction : 機構側の同定用（10/14 追加）。tm_A と同じ 0.05 Hz の三角波（0.05→0.55 MPa、2往復）を、
+                     拮抗筋の圧力を 0.10 / 0.20 / 0.30 MPa に変えて DF と F で流す。拮抗筋の圧力で曲線がどう
+                     横にずれ・傾きが変わるかから、力マップの倍率・たるみの境目と、PAM の剛性（力マップの長さ方向の傾き）を分ける。
+                     拮抗筋を 0.35 MPa 未満にとどめているので、両筋 0.35 MPa 以上の共収縮は起きない
 
 出力: signals/<name>.csv と <name>_annotated.csv（segment 列つき）
       run_signal_playback.py と、シミュレータ側の replay_open_loop.py の両方でそのまま使える。
@@ -19,7 +23,8 @@ gen_test_motions.py — JFPS 柱③「シミュレータで実機の動作を再
 安全: 指令は 0〜0.6 MPa（方策が普段使う範囲）。両筋 0.35 MPa 以上の共収縮は 3 s 以内。
 
 使い方:
-  python tools/gen_test_motions.py
+  python tools/gen_test_motions.py                            # 全部
+  python tools/gen_test_motions.py id_static_cocontraction    # 名前を指定したものだけ
 """
 from __future__ import annotations
 
@@ -167,6 +172,29 @@ def motion_E():
         s.save(f"tm_E_{short}_{key.split('_')[-1]}")
 
 
+def motion_static_cocontraction():
+    """機構側の静的な同定：拮抗筋の圧力を変えた準静的な三角波（DF・F それぞれ 3 水準 × 2 往復）"""
+    s = Seq(); s.hold(2.0)
+    up = np.linspace(0.05, 0.55, int(10 / DT)); tri = np.r_[up, up[::-1]]
+    for ch in ("DF", "F"):
+        for ant in (0.10, 0.20, 0.30):
+            start = (0.05, ant, REST[2]) if ch == "DF" else (ant, 0.05, REST[2])
+            s.ramp_to(2.0, start, tag=f"to_{ch}_ant{ant:.2f}"); s.hold(3.0, *start, tag=f"settle_{ch}_ant{ant:.2f}")
+            for k in range(2):
+                if ch == "DF":
+                    s.add(tri, ant, REST[2], f"S_DF_ant{ant:.2f}_tri_{k}")
+                else:
+                    s.add(ant, tri, REST[2], f"S_F_ant{ant:.2f}_tri_{k}")
+        s.ramp_to(1.0, REST); s.hold(3.0)
+    s.save("id_static_cocontraction")
+
+
+MOTIONS = {"tm_A_quasistatic": motion_A, "tm_B_steps": motion_B, "tm_C_sine": motion_C, "tm_D_antagonist": motion_D,
+           "tm_E": motion_E, "id_static_cocontraction": motion_static_cocontraction}
+
 if __name__ == "__main__":
+    import sys
+    names = sys.argv[1:] or list(MOTIONS)
     print("テスト動作を生成:")
-    motion_A(); motion_B(); motion_C(); motion_D(); motion_E()
+    for nm in names:
+        MOTIONS[nm]()
