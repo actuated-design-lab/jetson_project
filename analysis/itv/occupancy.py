@@ -77,7 +77,7 @@ R.to_csv(os.path.join(_HERE, "occupancy.csv"), float_format="%.2f")
 
 try:
     import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
-    plt.rcParams.update({"font.family": "serif", "font.serif": ["TeX Gyre Termes", "Times New Roman", "DejaVu Serif"],
+    plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "font.family": "serif", "font.serif": ["Liberation Serif", "Times New Roman", "TeX Gyre Termes", "DejaVu Serif"],
                          "font.size": 8})
     OUT = os.path.join(JP, "data", "user0", "jfps2026", "figures_paper"); os.makedirs(OUT, exist_ok=True)
     fig, ax = plt.subplots(figsize=(3.15, 2.3))
@@ -87,7 +87,7 @@ try:
     gg = np.vectorize(lambda f, a: _interp2(FG, AG, GT, f, a))(ff, aa)
     ax.contour(aa * 1000, ff, gg, levels=[G_TH], colors="C3", linewidths=1.5)
     ax.set_xlabel("Command amplitude [kPa]"); ax.set_ylabel("Frequency [Hz]")
-    ax.text(40, 6.6, "threshold region\n(model A gain < 0.7)", color="C3", fontsize=7)
+    ax.text(40, 6.6, "threshold region\n(threshold model gain < 0.7)", color="C3", fontsize=7)
     fig.colorbar(im, ax=ax, label="Share of time [%]", extend="max"); fig.tight_layout()
     for ext in ("pdf", "png"):
         fig.savefig(os.path.join(OUT, f"fig_occupancy.{ext}"), dpi=200)

@@ -16,7 +16,7 @@ import check_fg as C  # noqa: E402   （F・G の読み込みと振幅比。impo
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt  # noqa: E402
 
 OUT = os.path.join(E.JP_DEFAULT, "data", "user0", "jfps2026", "figures_paper"); os.makedirs(OUT, exist_ok=True)
-plt.rcParams.update({"font.family": "serif", "font.serif": ["TeX Gyre Termes", "Times New Roman", "DejaVu Serif"],
+plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "font.family": "serif", "font.serif": ["Liberation Serif", "Times New Roman", "TeX Gyre Termes", "DejaVu Serif"],
                      "mathtext.fontset": "stix", "font.size": 8, "axes.spines.top": False, "axes.spines.right": False,
                      "lines.linewidth": 1.1, "lines.markersize": 3.5})
 AMPS = [0.02, 0.04, 0.08, 0.12]
