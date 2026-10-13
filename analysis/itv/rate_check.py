@@ -36,7 +36,7 @@ print(R.groupby("rate")[["nrmse", "shift_med", "shift_p90"]].median().round(1).s
 # ---- 前刷の図（10/10 追加）：指令周期を粗くしたときの 0.3 MPa 通過時刻のずれ。打撃の判定幅 ±30 ms と比べる
 R.to_csv(os.path.join(_HERE, "rate_check.csv"), index=False, float_format="%.2f")
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt  # noqa: E402
-plt.rcParams.update({"font.family": "serif", "font.serif": ["TeX Gyre Termes", "Times New Roman", "DejaVu Serif"],
+plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "font.family": "serif", "font.serif": ["Liberation Serif", "Times New Roman", "TeX Gyre Termes", "DejaVu Serif"],
                      "font.size": 8, "axes.spines.top": False, "axes.spines.right": False})
 g = R.groupby("rate")[["shift_med", "shift_p90"]].median().sort_index(ascending=False)
 fig, ax = plt.subplots(figsize=(3.2, 1.7))

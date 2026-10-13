@@ -17,7 +17,7 @@ exec(src.replace("cache=True", "cache=False"))
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt  # noqa: E402
 
 OUT = os.path.join(JP, "data", "user0", "jfps2026", "figures_paper"); os.makedirs(OUT, exist_ok=True)
-plt.rcParams.update({"font.family": "serif", "font.serif": ["TeX Gyre Termes", "Times New Roman", "DejaVu Serif"],
+plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "font.family": "serif", "font.serif": ["Liberation Serif", "Times New Roman", "TeX Gyre Termes", "DejaVu Serif"],
                      "font.size": 8, "axes.spines.top": False, "axes.spines.right": False, "lines.linewidth": 1.0})
 FITS = json.load(open(os.path.join(_HERE, "struct_vs_data_fits.json")))["step"]
 TH = {"T": None, "O": np.array(FITS["O"])}

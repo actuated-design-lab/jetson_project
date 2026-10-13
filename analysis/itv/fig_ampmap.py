@@ -16,7 +16,7 @@ import check_fg as C  # noqa: E402   （F・G の読み込みと振幅比。impo
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt  # noqa: E402
 
 OUT = os.path.join(E.JP_DEFAULT, "data", "user0", "jfps2026", "figures_paper"); os.makedirs(OUT, exist_ok=True)
-plt.rcParams.update({"font.family": "serif", "font.serif": ["TeX Gyre Termes", "Times New Roman", "DejaVu Serif"],
+plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "font.family": "serif", "font.serif": ["Liberation Serif", "Times New Roman", "TeX Gyre Termes", "DejaVu Serif"],
                      "mathtext.fontset": "stix", "font.size": 8, "axes.spines.top": False, "axes.spines.right": False,
                      "lines.linewidth": 1.1, "lines.markersize": 3.5})
 AMPS = [0.02, 0.04, 0.08, 0.12]
@@ -35,7 +35,7 @@ for ch, fn in (("F", "data_pm_ch_F_1791270055.csv"), ("G", "data_pm_ch_G_1791270
     ar, ao = C.amps(u, m, seg), C.amps(u, p, seg)
     panels[ch] = pd.DataFrame([dict(a=a, f=f, real=ar[(a, f)], model=ao[(a, f)]) for (a, f) in ar])
 
-fig, axs = plt.subplots(1, 3, figsize=(6.7, 1.8), sharey=True)
+fig, axs = plt.subplots(1, 3, figsize=(6.7, 1.5), sharey=True)
 for ax, (ch, P) in zip(axs, panels.items()):
     for a in AMPS:
         g = P[np.isclose(P.a, a)].sort_values("f")
@@ -45,11 +45,11 @@ for ax, (ch, P) in zip(axs, panels.items()):
         ax.plot(g.f, g.model, "--", color=COL[a], alpha=0.6, lw=0.9)
     ax.set_title(ch, loc="left", fontsize=9); ax.set_xlabel("Frequency [Hz]")
     ax.set_xlim(0.8, 6.2 if ch == "DF" else 4.2); ax.set_ylim(0, 1.45); ax.grid(alpha=0.25, lw=0.5)
-axs[0].set_ylabel("Amplitude ratio (output / command)")
+axs[0].set_ylabel("Amplitude ratio")
 h, l = axs[0].get_legend_handles_labels()
 h += [plt.Line2D([], [], color="0.4", ls="--", lw=0.9)]; l += ["Flow-limited model"]
 fig.legend(h, l, loc="upper center", ncol=5, frameon=False, bbox_to_anchor=(0.55, 1.03), title=None)
-fig.tight_layout(rect=(0, 0, 1, 0.9))
+fig.tight_layout(rect=(0, 0, 1, 0.88))
 for ext in ("pdf", "png"):
     fig.savefig(os.path.join(OUT, f"fig_ampmap.{ext}"), dpi=200)
 print("saved", os.path.relpath(os.path.join(OUT, "fig_ampmap.pdf"), E.JP_DEFAULT))
