@@ -75,6 +75,13 @@ print(f"105本 × 3チャネル、0.5 s 区間 {len(W)} 個、通信の遅れ δ
 print(R.round(1).to_string())
 R.to_csv(os.path.join(_HERE, "occupancy.csv"), float_format="%.2f")
 
+# しきい値の領域の境目（周波数ごとに、表 G が 0.7 未満になる最大の振幅）。前刷 4 章「周波数とともに広がる」の出典（10/13）
+_aa = np.linspace(0.02, 0.3, 281)
+print("しきい値の領域に入る振幅の上限（G < 0.7）")
+for _f in (1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0):
+    _g = np.array([_interp2(FG, AG, GT, _f, _a) for _a in _aa]); _m = _aa[_g < G_TH]
+    print(f"  {_f:.1f} Hz: " + (f"{_m.max() * 1000:.0f} kPa 以下" if len(_m) else "なし"))
+
 try:
     import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
     plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "font.family": "serif", "font.serif": ["Liberation Serif", "Times New Roman", "TeX Gyre Termes", "DejaVu Serif"],
@@ -87,7 +94,7 @@ try:
     gg = np.vectorize(lambda f, a: _interp2(FG, AG, GT, f, a))(ff, aa)
     ax.contour(aa * 1000, ff, gg, levels=[G_TH], colors="C3", linewidths=1.5)
     ax.set_xlabel("Command amplitude [kPa]"); ax.set_ylabel("Frequency [Hz]")
-    ax.text(40, 6.6, "threshold region\n(threshold model gain < 0.7)", color="C3", fontsize=7)
+    ax.text(40, 6.6, "threshold region\n(measured / flow-limited < 0.7)", color="C3", fontsize=7)
     fig.colorbar(im, ax=ax, label="Share of time [%]", extend="max"); fig.tight_layout()
     for ext in ("pdf", "png"):
         fig.savefig(os.path.join(OUT, f"fig_occupancy.{ext}"), dpi=200)

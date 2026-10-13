@@ -22,7 +22,6 @@ plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "font.family": "seri
 A = json.load(open(os.path.join(_HERE, "fit_A.json")))
 O = np.array(A["O"]); fg, ag, G = np.array(A["fg"]), np.array(A["ag"]), np.array(A["G"])
 simO = lambda u, p0: sim_O(u, p0, *O)
-simA = lambda u, p0: sim_O(shape_cmd(u, A["tc"], A["W"], A["hk"], A["h0"], fg, ag, G), p0, *O)
 
 # (a) 小ステップ
 s = E.load(E.JP_DEFAULT, "smallstep"); p0 = float(np.median(s["m"][:20]))
@@ -30,11 +29,10 @@ tr = E.smallstep_t50(s["u"], s["m"], s["seg"]); to = E.smallstep_t50(s["u"], sim
 # (b) 40 kPa の正弦
 D = {k: E.load(E.JP_DEFAULT, k) for k in ("ampsweep", "sine", "sine2")}
 pO = {k: simO(d["u"], float(np.median(d["m"][:20]))) for k, d in D.items()}
-pA = {k: simA(d["u"], float(np.median(d["m"][:20]))) for k, d in D.items()}
 keys = ("ampsweep", "sine", "sine2")
-TO = E.sine_table(D, pO, keys=keys); TA = E.sine_table(D, pA, keys=keys)
+TO = E.sine_table(D, pO, keys=keys)
 sel = lambda T: T[np.isclose(T.a, 0.04) & T.c.between(0.25, 0.35)].groupby("f")[["real", "model"]].mean()
-mO, mA = sel(TO), sel(TA)
+mO = sel(TO)
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(3.3, 1.75))
 for d, mk, lab in (("dn", "o", "down"), ("up", "s", "up")):
@@ -42,13 +40,13 @@ for d, mk, lab in (("dn", "o", "down"), ("up", "s", "up")):
     x = [k[1] * 1000 for k in ks]
     ax1.plot(x, [tr[k] for k in ks], mk + "-", color="#1b2430", label=f"Measured ({lab})", mfc="white" if d == "up" else None)
 ks = sorted(k for k in to if k[0] == "dn" and k[1] >= 0.01)
-ax1.plot([k[1] * 1000 for k in ks], [to[k] for k in ks], "--", color="#8a8985", label="Model O")
+ax1.plot([k[1] * 1000 for k in ks], [to[k] for k in ks], "--", color="#8a8985", label="Flow-limited model")
 ax1.set_xscale("log"); ax1.set_xticks([10, 20, 40, 80]); ax1.set_xticklabels(["10", "20", "40", "80"]); ax1.minorticks_off()
 ax1.set_ylim(0, 300); ax1.set_xlabel("Step size [kPa]"); ax1.set_ylabel("Time to 50% [ms]")
 ax1.set_title("(a) Isolated steps", loc="left", fontsize=8); ax1.legend(frameon=False, fontsize=6, loc="upper left", handlelength=1.6)
 ax2.plot(mO.index, mO.real, "o-", color="#1b2430", label="Measured")
-ax2.plot(mO.index, mO.model, "--", color="#8a8985", label="Model O")
-ax2.plot(mA.index, mA.model, "-", color="#c2410c", label="O + threshold")
+ax2.plot(mO.index, mO.model, "--", color="#8a8985", label="Flow-limited model")
+# しきい値モデルの表はこの正弦（ampsweep・sine・sine2）から作っているので、重ねても予測にはならない。図には描かない（10/13）
 ax2.set_ylim(0, 1.4); ax2.set_xlabel("Frequency [Hz]"); ax2.set_ylabel("Amplitude ratio")
 ax2.set_title("(b) Sustained sine, 40 kPa", loc="left", fontsize=8); ax2.legend(frameon=False, fontsize=6, loc="upper right")
 for ax in (ax1, ax2):
@@ -58,4 +56,4 @@ for ext in ("pdf", "png"):
     fig.savefig(os.path.join(OUT, f"fig_threshold.{ext}"), dpi=200)
 print("t50 [ms] real:", {k: round(v) for k, v in sorted(tr.items())})
 print("t50 [ms] O   :", {k: round(v) for k, v in sorted(to.items())})
-print("40 kPa amplitude ratio"); print(pd.concat([mO.rename(columns={"model": "O"}), mA[["model"]].rename(columns={"model": "A"})], axis=1).round(2).to_string())
+print("40 kPa amplitude ratio"); print(mO.rename(columns={"model": "flow-limited"}).round(2).to_string())
