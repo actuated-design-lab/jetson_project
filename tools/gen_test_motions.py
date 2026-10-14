@@ -16,6 +16,10 @@ gen_test_motions.py — JFPS 柱③「シミュレータで実機の動作を再
                      拮抗筋の圧力を 0.10 / 0.20 / 0.30 MPa に変えて DF と F で流す。拮抗筋の圧力で曲線がどう
                      横にずれ・傾きが変わるかから、力マップの倍率・たるみの境目と、PAM の剛性（力マップの長さ方向の傾き）を分ける。
                      拮抗筋を 0.35 MPa 未満にとどめているので、両筋 0.35 MPa 以上の共収縮は起きない
+  id_static_F_taut : F が弱く見える問題の切り分け用（10/14 追加）。id_static_cocontraction の F 掃引は手首 4〜28° で、
+                     F のワイヤが張り始める 36° より下だった。DF を 0.40 / 0.45 / 0.50 MPa に保って手首を 36° より上に置き、
+                     F を 0.05→0.33 MPa の三角波（0.05 Hz 相当の速さ、2往復）で流す。F は 0.35 MPa 未満なので両筋 0.35 MPa 以上の共収縮は起きない。
+                     最後に F = 0 MPa で DF だけを 0.05→0.55 MPa の三角波（2往復）：F が効かない状態で DF と重力だけのつり合いを見る
 
 出力: signals/<name>.csv と <name>_annotated.csv（segment 列つき）
       run_signal_playback.py と、シミュレータ側の replay_open_loop.py の両方でそのまま使える。
@@ -189,8 +193,29 @@ def motion_static_cocontraction():
     s.save("id_static_cocontraction")
 
 
+def motion_static_F_taut():
+    """F が張っている角度（36° より上）での F の効き方と、F = 0 での DF と重力だけのつり合い"""
+    s = Seq(); s.hold(2.0)
+    rate = (0.55 - 0.05) / 10.0                                   # id_static_cocontraction と同じ掃引の速さ [MPa/s]
+    upF = np.linspace(0.05, 0.33, int(round((0.33 - 0.05) / rate / DT))); triF = np.r_[upF, upF[::-1]]
+    for ant in (0.40, 0.45, 0.50):
+        start = (ant, 0.05, REST[2])
+        s.ramp_to(2.0, start, tag=f"to_F_ant{ant:.2f}"); s.hold(3.0, *start, tag=f"settle_F_ant{ant:.2f}")
+        for k in range(2):
+            s.add(ant, triF, REST[2], f"S_F_ant{ant:.2f}_tri_{k}")
+    s.ramp_to(1.0, REST); s.hold(3.0)
+    up = np.linspace(0.05, 0.55, int(10 / DT)); tri = np.r_[up, up[::-1]]
+    start = (0.05, 0.0, REST[2])
+    s.ramp_to(2.0, start, tag="to_DF_ant0.00"); s.hold(3.0, *start, tag="settle_DF_ant0.00")
+    for k in range(2):
+        s.add(tri, 0.0, REST[2], f"S_DF_ant0.00_tri_{k}")
+    s.ramp_to(1.0, REST); s.hold(3.0)
+    s.save("id_static_F_taut")
+
+
 MOTIONS = {"tm_A_quasistatic": motion_A, "tm_B_steps": motion_B, "tm_C_sine": motion_C, "tm_D_antagonist": motion_D,
-           "tm_E": motion_E, "id_static_cocontraction": motion_static_cocontraction}
+           "tm_E": motion_E, "id_static_cocontraction": motion_static_cocontraction,
+           "id_static_F_taut": motion_static_F_taut}
 
 if __name__ == "__main__":
     import sys
