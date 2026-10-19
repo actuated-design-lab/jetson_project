@@ -1,0 +1,17 @@
+# rig_config.yaml — PAM 単体試験機の設定（isotonic.py / isometric.py / check.py が読む）
+# レーザの換算（mm = gain * raw + offset、収縮の向き）は別ファイル laser_calib.json（check.py の cal / dir が書く）
+
+serial:
+  port: /dev/ttyUSB0
+  baud: 230400            # デプロイ・信号再生と同じ（受信 7 要素）
+
+pam:
+  L0_mm: 150.0            # 試験する PAM の自然長（収縮率 = 変位 / L0）。試験する筋に合わせて直す
+
+limits:
+  p_cmd_max: 0.6          # 指令の上限 [MPa]（クリップ）
+  p_meas_max: 0.65        # 内圧がこれを越えたら非常停止 [MPa]
+  force_max_N: 150.0      # ロードセルの値がこれを越えたら非常停止 [N]。治具（3D プリント＋埋め込みナット）
+                          # とロードセルの定格を確かめてから上げる
+  rx_timeout_s: 0.25      # 受信がこれだけ途絶えたら非常停止 [s]
+  isometric_move_mm: 2.0  # 等尺性で変位がこれ以上動いたら非常停止（治具のずれ・破損） [mm]

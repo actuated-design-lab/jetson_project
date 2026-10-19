@@ -6,7 +6,8 @@
       <user>  : user0, user1, ...（porcaro_2026 の user と同じ番号）
       <venue> : 学会・目的ごとのフォルダ（ral2026, jfps2026, ...）
       <kind>  : ral / iros / binary（deploy_policy.py）, playback（run_signal_playback.py）,
-                verification（verify_sensors.py）
+                verification（verify_sensors.py）,
+                isotonic / isometric / rigcheck（tools/pamtest/ の PAM 単体試験）
 
 user と venue は、各スクリプトの --user / --venue か、環境変数 PORCARO_USER / PORCARO_VENUE で指定する。
 どちらも無ければ実行前に止める（data/ 直下やルートにまた散らからないように）。
