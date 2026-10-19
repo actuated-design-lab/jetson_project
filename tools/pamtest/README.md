@@ -57,7 +57,6 @@ python3 tools/pamtest/isotonic.py --pam test --mock
 
 ## 安全
 
-- 圧力の階段は 0〜0.7 MPa（0.7 は補間用の外側の点）。ITV は供給圧より上を出せないので、供給を 0.8 MPa 程度に上げておく
 
 - 自動で動いている間は **スペース / e / q / Esc** のどれかで即 0 MPa（非常停止）。Ctrl+C も同じ
 - 自動停止（`rig_config.yaml` の `limits`）：内圧 > `p_meas_max`、|力| > `force_max_N`（等尺性だけ）、受信の途絶 > `rx_timeout_s`、
