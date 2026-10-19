@@ -14,7 +14,7 @@
 | 2 | G 内圧 | 使わない（記録だけ） |
 | 3, 4 | 手首角・グリップ角 | 使わない（記録だけ） |
 | 5 | flag | MicroLabBox だけで使う（記録だけ） |
-| 6 | 力 | **ロードセル**（これまでと同じ） |
+| 6 | 力 | **ロードセル**（これまでと同じ）。等尺性だけで使う。等張性は記録だけ |
 
 送信は DF の ITV だけ使い、F・G には常に 0 MPa を送る。
 
@@ -57,8 +57,10 @@ python3 tools/pamtest/isotonic.py --pam test --mock
 
 ## 安全
 
+- 圧力の階段は 0〜0.7 MPa（0.7 は補間用の外側の点）。ITV は供給圧より上を出せないので、供給を 0.8 MPa 程度に上げておく
+
 - 自動で動いている間は **スペース / e / q / Esc** のどれかで即 0 MPa（非常停止）。Ctrl+C も同じ
-- 自動停止（`rig_config.yaml` の `limits`）：内圧 > `p_meas_max`、|力| > `force_max_N`、受信の途絶 > `rx_timeout_s`、
+- 自動停止（`rig_config.yaml` の `limits`）：内圧 > `p_meas_max`、|力| > `force_max_N`（等尺性だけ）、受信の途絶 > `rx_timeout_s`、
   等尺性で変位が基準から > `isometric_move_mm`（治具のずれ・破損）
 - 指令は `p_cmd_max` でクリップ。どの終わり方でも 0 MPa を送ってから閉じる
 - ソフトの停止は ITV を 0 MPa にするだけ。Jetson が固まったときに備えて、供給側の手元バルブを手の届くところに

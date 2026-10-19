@@ -1,7 +1,7 @@
 """isotonic.py — PAM 単体の等張性試験（おもり一定で長さを測る）
 
 おもりの付け替えは人がやるので、付け替えの回数が少ない順に組んである。
-  load_major（既定）    : おもりを 1 段替える → 圧力を 0→0.6→0 MPa の階段で自動で上げ下げ → 次のおもり …
+  load_major（既定）    : おもりを 1 段替える → 圧力を 0→0.7→0 MPa の階段で自動で上げ下げ → 次のおもり …
                           付け替えはおもりの段数だけ。圧力の上げ下げのヒステリシスも同時に取れる
   pressure_major        : 圧力を固定したまま、おもりを 1 段ずつ足して外す（長さを変えたときのヒステリシス）
                           付け替えが多いので、圧力は 2〜3 本に絞る
@@ -190,7 +190,7 @@ def main():
     print(f"[isotonic] {a.mode} / PAM {a.pam} / 保存先 {os.path.relpath(out_dir)}/{stem}.*")
     print("  自動で動いている間：スペース / e / q / Esc で非常停止（0 MPa）")
 
-    rig = Rig(cfg, calib, mock=a.mock, isometric=False)
+    rig = Rig(cfg, calib, mock=a.mock, isometric=False, use_force=False)   # 等張性はロードセルを使わない
     rig.start()
     sess = Session(rig, plan, a)
     save = lambda: save_run(rig, out_dir, stem, meta, sess.steps)  # noqa: E731

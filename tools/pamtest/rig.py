@@ -6,7 +6,7 @@
       P_DF    : 試験する PAM の内圧 [MPa]（DF の圧力センサ）
       laser   : レーザ変位計。F の圧力センサの代わりに同じ入力へ挿したので、値は Simulink の
                 圧力の換算を通った「生の値」。mm への換算は laser_calib.json（check.py の cal で作る）
-      force_N : ロードセル（これまでと同じ位置）
+      force_N : ロードセル（これまでと同じ位置）。等尺性だけで使う。等張性は記録だけ（力の上限でも止めない）
       flag    : MicroLabBox 側だけで使う。記録はするが Jetson は見ない
       P_G / wrist / grip : 使わない（記録だけ）
 
@@ -201,8 +201,10 @@ class Rig:
         rig.close()
     """
 
-    def __init__(self, cfg: dict, calib: dict, mock: bool = False, isometric: bool = False):
+    def __init__(self, cfg: dict, calib: dict, mock: bool = False, isometric: bool = False,
+                 use_force: bool = True):
         self.cfg, self.calib = cfg, calib
+        self.use_force = use_force          # False（等張性）なら力の上限で止めない（ロードセルは記録だけ）
         self.lim = cfg["limits"]
         self.isometric = isometric
         self.mock = mock
@@ -323,7 +325,7 @@ class Rig:
             return
         if s["meas_pres_DF"] > self.lim["p_meas_max"]:
             self.trigger_estop(f"内圧 {s['meas_pres_DF']:.3f} MPa > {self.lim['p_meas_max']}")
-        elif abs(s["force_N"]) > self.lim["force_max_N"]:
+        elif self.use_force and abs(s["force_N"]) > self.lim["force_max_N"]:
             self.trigger_estop(f"力 {s['force_N']:.1f} N > {self.lim['force_max_N']} N")
         elif self.isometric and self.laser_ref_mm is not None:
             d = self.laser_mm(s["meas_pres_F"]) - self.laser_ref_mm
