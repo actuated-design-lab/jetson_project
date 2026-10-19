@@ -1,0 +1,14 @@
+# pamtest_isometric.yaml — PAM 単体の等尺性試験（tools/pamtest/isometric.py）
+#
+# 1 ラン = 長さ 1 つ。治具で収縮率を固定 → 0 MPa で基準 → 圧力の階段を cycles 往復
+# 長さ（--contraction_pct）を変えて何本か流す。例: 0, 2, 4, 6 %
+# 1 往復 = 13 段 ×（ramp 1 s + hold 5 s）≈ 80 s
+
+pressures: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
+pressure_updown: true
+cycles: 3               # 0 = 停止キーを押すまでくり返す（--cycles で上書き）
+
+zero_s: 2.0             # 0 MPa での基準（力の 0 点・変位の基準）[s]
+ramp_s: 1.0
+hold_s: 5.0
+avg_s: 2.0

@@ -37,7 +37,8 @@ models/
 songs/          入力MIDI（test_*, gmd_*）
 signals/        ポリシー無しで再生する入力信号CSV（exp*, echo_*, pm_*, tm_*）。実測はここに置かない
 tools/          データ収集・信号生成・疎通確認・検証スクリプト（serial_test/ 含む）
-  plans/            run_experiment_batch.py の実験計画 YAML
+  plans/            run_experiment_batch.py の実験計画 YAML（pamtest_*.yaml は PAM 単体試験の計画）
+  pamtest/          PAM 単体試験（等張性・等尺性）→ tools/pamtest/README.md
 analysis/       図の生成・解析（itv/ = 圧力モデルの同定）
 
 data/           ★実機で取ったデータ。data/<user>/<venue>/<種類>_<日付>/ に1セッション1フォルダ
@@ -68,7 +69,8 @@ run_oc_demo.sh  OCデモ起動スクリプト（Jetsonで直接叩く。動か�
   export PORCARO_USER=user0 PORCARO_VENUE=jfps2026
   ```
 - 種類ごとのフォルダ名: `ral_` `iros_` `si_`（モデルの group）／ `binary_`（2値で動かしたラン）／
-  `playback_`（信号再生）／ `verification_`（センサ確認）。後ろはすべて実行日 `YYYYMMDD`。
+  `playback_`（信号再生）／ `verification_`（センサ確認）／
+  `isotonic_` `isometric_` `rigcheck_`（PAM 単体試験、tools/pamtest/）。後ろはすべて実行日 `YYYYMMDD`。
 - 新しい学会・目的は `--venue` に新しい名前を渡せばフォルダができる（既存と綴りが違うと別フォルダに
   なるので、起動時の「新しく作ります」の表示に注意）。
 - `data/` 直下とリポジトリのルートには何も置かない。
