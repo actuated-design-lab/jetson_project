@@ -8,14 +8,15 @@ PAM は手で縮む向きには動かせない（硬い）ので、長さを変�
   1. ゆるめる       [人] 0 MPa で治具をゆるめて Enter（c = 0 % はそのまま自然長で固定）
   2. 縮める         [自動] 圧力をゆっくり上げ、収縮率が c に届いたら止める
                     [人] 必要なら + / − で微調整 → 治具を固定して Enter（このあいだ加圧したまま。手に注意）
-  3. 0 MPa に抜く   [自動] 治具が長さを保つ。0 MPa で力の 0 点と固定位置を取り、実際の収縮率を表示
+  3. 0 MPa に抜く   [自動] 筋はたるんで治具のがたの分だけ伸びる（正常）。0 MPa で力の 0 点を取る。
+                    実際の収縮率は、2 で固定したとき（加圧して縮めた状態）のレーザ位置から出す
   4. 測る           [自動] 圧力の階段 0→0.6→0 MPa を cycles 往復。各段の力を記録
   → 次の長さへ（1 に戻る）
 
 非常停止
   * 自動で動いている間（2 の自動部分・3・4）はスペース / e / q / Esc で即 0 MPa（Ctrl+C も同じ）
   * 自動で止まる条件（rig_config.yaml の limits）：内圧の上限、力の上限、受信の途絶、
-    4 の間に変位が固定位置から isometric_move_mm 以上動いた（治具のずれ・破損）
+    4 の間に、力がかかっている状態で変位が固定位置から isometric_move_mm 以上動いた（治具のずれ・破損）
   * 人の操作待ち（Enter 待ち）の間はキーの非常停止は効かない（Ctrl+C と自動停止は効く）
 
 途中で止まったら（MicroLabBox が止まった等）、自然長の基準を引き継いで、その長さから再開できる:
@@ -146,11 +147,12 @@ class Session:
             r.ramp_to(p, 0.5)
             r.wait(pl["approach_settle_s"], status=False)
         self.mock_fix()
-        r.event("fixed", c_set=c, P=r.target, c_now=self.now_c())
-        return r.target
+        fix_mm = r.mean(0.3)["laser_mm"]          # Enter を押した直前の位置
+        r.event("fixed", c_set=c, P=r.target, c_now=self.contraction(fix_mm), laser_mm=fix_mm)
+        return r.target, fix_mm
 
     # ---- 3〜4. 0 MPa に抜いて測る -----------------------------------------------
-    def measure(self, c: float, p_fix: float | None):
+    def measure(self, c: float, p_fix: float | None, fix_mm: float):
         r, pl = self.rig, self.plan
         r.keys.arm()
         r.set_tag(phase="release", c_set=c)
@@ -158,13 +160,16 @@ class Session:
         r.set_tag(phase="zero", c_set=c)
         r.wait(pl["zero_s"])
         z = r.mean(pl["zero_s"] * 0.8)
-        c_act = self.contraction(z["laser_mm"])
-        r.move_ref_mm = z["laser_mm"]                 # ここから変位の監視が効く
-        r.event("zero", c_set=c, c_actual=c_act, **z)
+        c_act = self.contraction(fix_mm)              # 固定したとき（縮めた状態）の長さ
+        slack = self.rig.calib["sign"] * (fix_mm - z["laser_mm"])   # 0 MPa に抜いて伸びた量（治具のがた）[mm]
+        r.force_zero_N = z["force_N"]
+        r.move_ref_mm = fix_mm                        # ここから変位の監視が効く（力がかかっているときだけ）
+        r.event("zero", c_set=c, c_actual=c_act, slack_mm=slack, **z)
         warn = "  ★設定とずれています" if abs(c_act - c) > pl["approach_tol_pct"] * 2 else ""
-        print(f"\n  固定：実際の収縮 {c_act:.2f} %（設定 {c:g} %）、力の 0 点 {z['force_N']:.2f} N{warn}")
+        print(f"\n  固定：実際の収縮 {c_act:.2f} %（設定 {c:g} %）、0 MPa でたるんで {slack:.2f} mm 伸びた、"
+              f"力の 0 点 {z['force_N']:.2f} N{warn}")
         self.lengths.append({"c_set": c, "c_actual": c_act, "P_fix": p_fix, "zero_force_N": z["force_N"],
-                             "fixed_mm": z["laser_mm"]})
+                             "fixed_mm": fix_mm, "slack_mm": slack})
         stairs = staircase(pl["pressures"], pl.get("pressure_updown", True))
         cycles = pl["cycles"] if self.args.cycles is None else self.args.cycles
         for cyc in range(1, cycles + 1):
@@ -178,7 +183,7 @@ class Session:
                        "P_cmd": p, "P_dir": pdir, "P_meas": m["P_meas"],
                        "force_N": m["force_N"], "force_N_std": m["force_N_std"],
                        "force_N_zeroed": m["force_N"] - z["force_N"],
-                       "laser_mm": m["laser_mm"], "move_mm": m["laser_mm"] - z["laser_mm"],
+                       "laser_mm": m["laser_mm"], "move_mm": m["laser_mm"] - fix_mm,
                        "t_rel": time.perf_counter() - self.t0}
                 self.steps.append(row)
                 print(f"\r  [{row['step']:3d}] 収縮 {c:g} % 往復 {cyc} P {p:.2f}→{m['P_meas']:.3f} MPa ({pdir:4s}) | "
@@ -197,15 +202,15 @@ class Session:
                     self.mock_loose()
                     self.ask("0 MPa のまま、治具を自然長（収縮 0 %）で固定して Enter")
                     self.mock_fix()
-                    p_fix = 0.0
+                    p_fix, fix_mm = 0.0, self.rig.mean(1.0)["laser_mm"]
                 else:
-                    p_fix = self.approach(c)
+                    p_fix, fix_mm = self.approach(c)
             except Skip:
                 self.rig.ramp_to(0.0, self.plan["ramp_s"])
                 self.rig.event("skip", c_set=c)
                 print(f"  {c:g} % を飛ばしました")
                 continue
-            self.measure(c, p_fix)
+            self.measure(c, p_fix, fix_mm)
             save()
 
 
@@ -225,7 +230,7 @@ def main():
     user, venue = require_user_venue(a.user, a.venue)
     cfg, calib, plan = load_config(), load_calib(), load_plan(a.plan)
     if a.mock:
-        plan = {**plan, "hold_s": 0.4, "avg_s": 0.2, "ramp_s": 0.2, "zero_s": 0.5, "approach_settle_s": 0.3,
+        plan = {**plan, "hold_s": 0.4, "avg_s": 0.2, "ramp_s": 0.2, "zero_s": 0.5, "approach_settle_s": 0.6,
                 "approach_rate_MPa_s": 0.3}
     cs = [float(c) for c in (a.contractions or plan["contractions_pct"])]
     if a.start_pct is not None:
