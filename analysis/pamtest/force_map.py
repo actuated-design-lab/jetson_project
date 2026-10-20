@@ -12,6 +12,7 @@
   fig_force_length.png：圧力ごとの力–収縮率（実測の上り・下り、カタログ、今の sim）
   fig_length_hysteresis.png：等張性のおもりごとの収縮率–圧力（上げ・下げ）
   isometric_table.csv：等尺性の長さ × 圧力 × 上り下り（3 往復の平均）
+  isotonic_table.csv：等張性のおもり × 足す/外す × 圧力 × 上げ/下げ
   summary.md：数字のまとめ
 
   python3 analysis/pamtest/force_map.py --porcaro ../porcaro_2026
@@ -104,6 +105,7 @@ def main():
     gi.round(4).to_csv(os.path.join(out, "isometric_table.csv"), index=False)
     gt = ton.groupby(["load_kg", "load_dir", "P_cmd", "P_dir"]).agg(P=("P_meas", "mean"), h=("h", "mean"),
                                                                      F=("F", "mean")).reset_index()
+    gt.round(4).to_csv(os.path.join(out, "isotonic_table.csv"), index=False)
 
     # ---- 図 1：圧力ごとの力–収縮率 ------------------------------------------------
     Ps = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]

@@ -29,7 +29,92 @@
 | `isotonic.py` | 等張性（おもり一定）。計画は `tools/plans/pamtest_isotonic.yaml` |
 | `isometric.py` | 等尺性（長さ固定）。長さを何段か変えて 1 セッションで回す。計画は `tools/plans/pamtest_isometric.yaml` |
 
-## 手順
+## 実験の流れ（2026/10/20 にやった順。次もこの順で）
+
+### 0. 準備
+- 治具（3D プリント、PLA）：ねじは通し穴＋ナット埋め込み（PLA に直接タップしない）。力が層に沿う向きに積層する。
+  等尺性ではロードセルの固定部に数百 N かかる（DF、収縮 0 %・0.6 MPa で約 290 N）
+- おもり：100 g × 2、200 g × 2、500 g × 3、1 kg × 1（0.1〜3.1 kg を 0.1 kg 刻みで作れる）
+- 供給圧：0.6 MPa 付近（ITV は供給より上は出せない）
+
+### 1. MicroLabBox（Simulink / ControlDesk）
+- 配線は上の表。**10/20 は DF の圧力センサが読めなかった**ので、G の圧力センサを DF のレギュレータの出口につなぎ、
+  `rig_config.yaml` を `channels.pressure: meas_pres_G` にした。DF のセンサを直したら `meas_pres_DF` に戻す
+- ロードセル：アンプ DPM-911B（VOLTAGE OUT 10.00 V = 1636 µε → 10 V = 500 N）、Simulink は ×10（ADC → V）→ ×50（N/V）。
+  **Simulink の `fcn`（5 サンプルのピークホールド、初期値 −100）が、引っ張り（マイナスの値）を −100 N で切る**ので、
+  試験機では `Force [N]` の手前の `-1` を `1` にして、引っ張りを + にする。**ロボットに戻すときは必ず `-1` に戻す**
+  （打撃力の符号が逆になる）
+- ControlDesk：実験が Running、出力の許可（flag）が ON。ここが OFF だとレギュレータが動かない
+
+### 2. Jetson
+```bash
+# 時刻合わせ・FTDI・コンテナ起動はリポジトリの README のとおり
+git pull --no-rebase --no-edit
+export PORCARO_USER=user0 PORCARO_VENUE=pamtest      # venue を jfps2026 などと間違えない
+```
+
+### 3. 配線確認とレーザ（`check.py`）
+- `m`：受信 200 Hz、内圧・レーザ・力が動くか（力は手で軽く引いて確かめる）
+- `p 0.6` → `p 0`：筋が縮みきった位置と戻った位置で、レーザのアンプに「---」が出ないか（近すぎると範囲外で値が止まる）
+- `cal`：raw がすでに mm で出ているなら省略できる。`p 0` と `p 0.6` の差をノギスで測って raw の差と合えば省略
+  （10/20 は省略、gain 1）。合わなければ 2 点校正
+- `dir`：おもり無し・手を離して。縮むと + になる向きを決める（10/20 は sign = −1）
+- 10/20 の目安：0.2 MPa・おもり無しで約 4.7 mm（3.1 %）縮む
+
+### 4. 等張性（約 30 分＋付け替え）
+```bash
+python3 tools/pamtest/isotonic.py --pam DF_robot
+```
+- 最初の質問：おもり無しのまま Enter（長さの基準）
+- おもり：0 → 0.2 → 0.5 → 1.0 → 1.5 → 2.0 → 3.1 kg を足して、2.0 → … → 0 と外す（13 回）。1 段ごとに 0→0.6→0 MPa を自動で 1 往復（約 2 分）
+- 1 段目（0 kg）の 0.6 MPa で収縮が +18 % 前後なら正常
+- 止まったら（下の「トラブル」）、その段から再開：
+  ```bash
+  python3 tools/pamtest/isotonic.py --pam DF_robot --start_kg 1.5 [--start_dir remove] --ref_from <止まったランの .json>
+  ```
+
+### 5. 等尺性（約 40 分）
+```bash
+python3 tools/pamtest/isometric.py --pam DF_robot
+```
+- 長さは 0 → 2 → … → 14 %（筋は縮む向きにしか手で動かせないので小さい順）
+- 各長さ：治具をゆるめて Enter → 圧力で自動で縮める → 必要なら + / − で微調整 → **治具を固定して Enter** → 0 MPa → 3 往復
+- 固定して 0 MPa に抜くと、筋がたるんで治具のがたの分だけ戻る。これは正常（`slack_mm` に残る）。
+  実際の収縮率は固定したとき（加圧した状態）の位置から出る。★（設定から 0.4 % 以上ずれ）が出たら q で止めて固定し直す
+- 止まったら、自然長の基準を引き継いでその長さから再開（`--ref_from` は自然長を取った最初のセッションの .json）：
+  ```bash
+  python3 tools/pamtest/isometric.py --pam DF_robot --start_pct 12 --ref_from <最初のセッションの .json>
+  ```
+
+### 6. 終わったら
+```bash
+# ホスト側（コンテナの外）で
+git add data/user0/pamtest tools/pamtest/laser_calib.json
+git commit        # 無効なラン（止まった・固定ミスなど）と理由、再開したランの対応を書く
+git push
+```
+- 全記録は `.csv.gz`。無圧縮だと 30 分で 100 MB を超えて push できない（古い .csv は `compress_logs.py --apply`）
+- 解析：`python3 analysis/pamtest/force_map.py --porcaro ../porcaro_2026`（使うランと段はスクリプト冒頭の `ISOM` / `ISOT` に書く）
+  → `data/user0/pamtest/summary/`。sim のマップは porcaro_2026 の `analysis/eval/make_measured_map.py`
+
+### トラブルと対処（10/20 に起きたこと）
+
+| 症状 | 原因 | 対処 |
+|---|---|---|
+| レギュレータが動かない（最初） | ControlDesk の出力の許可（flag）が OFF | 許可を ON |
+| 10〜15 分ごとにレギュレータが指令を受け付けなくなる | MicroLabBox 側（原因は未特定。受信は続いていたので非常停止はかからない） | ビルドし直して `--start_*` で再開。数段ごとにビルドし直すと安全。次に起きたら、ビルドの前に ControlDesk で受信した指令（cmd_DF）が変わるか見る |
+| 内圧が 0 のまま | DF の圧力センサが故障 | G のセンサで代用（`channels.pressure`） |
+| 力が −100 N で頭打ち | Simulink の `fcn` の初期値 −100 | 符号を反転（上の 1） |
+| 等尺性で 2 mm 動いて止まる | 治具の伸び・固定ミス | 治具の隙間を埋める、固定し直す |
+| push できない（100 MB 超） | 無圧縮の CSV | `.csv.gz`（今は自動）、古いものは `compress_logs.py` |
+| `git pull` が divergent branches で止まる | Jetson でコミットした後に pull | `git pull --no-rebase --no-edit` |
+
+### 10/20 の結果
+`data/user0/pamtest/summary/summary.md`、`fig_force_length.png`、`fig_length_hysteresis.png`。
+実測の力はカタログの 0.3〜0.7 倍（中央値 0.58）、自由収縮は 0.6 MPa で 18.4 %。sim 用のマップは porcaro_2026 の
+`tasks/data/pam_force_map_measured.csv`（使い方は同じフォルダの README）。
+
+## コマンド早見
 
 ```bash
 export PORCARO_USER=user0 PORCARO_VENUE=pamtest
