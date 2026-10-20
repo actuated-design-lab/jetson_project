@@ -15,11 +15,17 @@
   python3 tools/pamtest/isotonic.py --pam DF_robot --mode pressure_major
   python3 tools/pamtest/isotonic.py --pam DF_robot --mock                 # 実機なしのドライラン
 
+途中で止まったときの再開（load_major）：前のランの .json から長さの基準を引き継ぎ、指定したおもりの段から始める
+  python3 tools/pamtest/isotonic.py --pam DF_robot --start_kg 1.5 \
+      --ref_from data/user0/pamtest/isotonic_<日付>/isotonic_DF_robot_load_major_<unixtime>.json
+  （外す側の 1.5 kg から始めるなら --start_dir remove。--ref_from を付けなければ、おもり無しで基準を取り直す）
+
 出力: data/<user>/<venue>/isotonic_<日付>/isotonic_<pam>_<mode>_<unixtime>.csv / _steps.csv / .json
 """
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 import time
@@ -84,6 +90,17 @@ class Session:
 
     def reference(self):
         r = self.rig
+        if self.args.ref_from:
+            with open(self.args.ref_from, encoding="utf-8") as f:
+                prev = json.load(f)
+            if prev.get("laser_ref_mm") is None:
+                sys.exit(f"[isotonic] {self.args.ref_from} に laser_ref_mm がありません")
+            r.laser_ref_mm = float(prev["laser_ref_mm"])
+            r.event("reference_inherited", ref_from=self.args.ref_from, laser_mm=r.laser_ref_mm)
+            now = r.mean(1.0)["laser_mm"]
+            print(f"  基準を引き継ぎ：{r.laser_ref_mm:.3f} mm（{os.path.basename(self.args.ref_from)}）。"
+                  f"いまの位置 {now:.3f} mm")
+            return
         ask(r, f"0 MPa・吊り具だけ（{self.hanger} kg、おもり無し）にして Enter → 長さの基準を取る")
         self.set_load(0.0)
         r.keys.arm()
@@ -116,7 +133,17 @@ class Session:
         rest = float(pl.get("rest_pressure", 0.0))
         seq = loads_sequence(pl)
         stairs = staircase(pl["pressures"], pl.get("pressure_updown", True))
+        i0 = 0
+        if self.args.start_kg is not None:
+            hits = [i for i, (w, d) in enumerate(seq)
+                    if abs(w - self.args.start_kg) < 1e-6 and d == self.args.start_dir]
+            if not hits:
+                sys.exit(f"[isotonic] おもりの順番に {self.args.start_kg} kg（{self.args.start_dir}）がありません: {seq}")
+            i0 = hits[0]
+            print(f"  {i0 + 1} 段目（{self.args.start_kg} kg、{self.args.start_dir}）から始めます")
         for i, (w, wdir) in enumerate(seq, 1):
+            if i - 1 < i0:
+                continue
             r.ramp_to(rest, pl["ramp_s"])
             got = ask(r, f"[{i}/{len(seq)}] {rest} MPa です。おもりを {w} kg にして Enter"
                          "（実際の値が違えば数値、s で飛ばす）", default=w)
@@ -173,6 +200,9 @@ def main():
     ap.add_argument("--mode", choices=["load_major", "pressure_major"], default="load_major")
     ap.add_argument("--plan", default="tools/plans/pamtest_isotonic.yaml")
     ap.add_argument("--note", default="", help="メモ（json に残る）")
+    ap.add_argument("--start_kg", type=float, default=None, help="（load_major）このおもりの段から始める（途中で止まったときの再開）")
+    ap.add_argument("--start_dir", choices=["add", "remove"], default="add", help="--start_kg が足す側か外す側か")
+    ap.add_argument("--ref_from", default=None, help="長さの基準を引き継ぐ前のランの .json（おもり無しで取り直さない）")
     ap.add_argument("--mock", action="store_true", help="実機なしのドライラン")
     add_user_venue_args(ap)
     a = ap.parse_args()
@@ -186,6 +216,7 @@ def main():
     stem = f"isotonic_{a.pam}_{a.mode}_{int(time.time())}"
     out_dir = run_dir(user, venue, "isotonic")
     meta = {"test": "isotonic", "mode": a.mode, "pam": a.pam, "plan": plan, "plan_path": a.plan,
+            "start_kg": a.start_kg, "start_dir": a.start_dir, "ref_from": a.ref_from,
             "note": a.note, "mock": a.mock}
     print(f"[isotonic] {a.mode} / PAM {a.pam} / 保存先 {os.path.relpath(out_dir)}/{stem}.*")
     print("  自動で動いている間：スペース / e / q / Esc で非常停止（0 MPa）")
