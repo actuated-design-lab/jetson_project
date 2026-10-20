@@ -1,14 +1,21 @@
 # pamtest_isometric.yaml — PAM 単体の等尺性試験（tools/pamtest/isometric.py）
 #
-# 1 ラン = 長さ 1 つ。治具で収縮率を固定 → 0 MPa で基準 → 圧力の階段を cycles 往復
-# 長さ（--contraction_pct）を変えて何本か流す。例: 0, 2, 4, 6 %
-# 1 往復 = 13 段 ×（ramp 1 s + hold 5 s）≈ 80 s
+# 1 セッション = 自然長の基準 → 長さ（contractions_pct）ごとに「ゆるめる → 圧力で縮める → 固定 → 0 MPa → 測る」
+# 1 長さ ≈ 縮める 1 分 + 測る 13 段 ×（ramp 1 s + hold 5 s）× cycles 3 ≈ 5 分 → 8 長さで 40 分ほど
+
+contractions_pct: [0, 2, 4, 6, 8, 10, 12, 14]   # 縮める向きにしか動かせないので、小さい順。14 % は F の可動範囲（〜15 %）の端
 
 pressures: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
 pressure_updown: true
-cycles: 3               # 0 = 停止キーを押すまでくり返す（--cycles で上書き）
+cycles: 3               # 各長さでの往復回数（--cycles で上書き）
 
-zero_s: 2.0             # 0 MPa での基準（力の 0 点・変位の基準）[s]
+zero_s: 2.0             # 0 MPa での基準（力の 0 点・固定位置）[s]
 ramp_s: 1.0
 hold_s: 5.0
 avg_s: 2.0
+
+# 縮める（治具をゆるめた状態で、圧力を上げて目標の収縮率まで縮める）
+approach_rate_MPa_s: 0.03   # 圧力を上げる速さ（0.6 MPa まで 20 s）
+approach_tol_pct: 0.2       # 目標からこの差以内なら届いたとみなす [%]。実際の収縮率がこの 2 倍ずれたら表示で知らせる
+approach_settle_s: 1.5      # 止めてから表示するまでの待ち [s]
+approach_nudge_MPa: 0.005   # + / − 1 回の微調整
