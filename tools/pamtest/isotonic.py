@@ -20,7 +20,7 @@
       --ref_from data/user0/pamtest/isotonic_<日付>/isotonic_DF_robot_load_major_<unixtime>.json
   （外す側の 1.5 kg から始めるなら --start_dir remove。--ref_from を付けなければ、おもり無しで基準を取り直す）
 
-出力: data/<user>/<venue>/isotonic_<日付>/isotonic_<pam>_<mode>_<unixtime>.csv / _steps.csv / .json
+出力: data/<user>/<venue>/isotonic_<日付>/isotonic_<pam>_<mode>_<unixtime>.csv.gz / _steps.csv / .json
 """
 from __future__ import annotations
 
@@ -240,7 +240,7 @@ def main():
     finally:
         rig.close()
         base = save()
-        print(f"[Saved] {os.path.relpath(base)}.csv / _steps.csv / .json（{len(sess.steps)} 段）")
+        print(f"[Saved] {os.path.relpath(base)}.csv.gz / _steps.csv / .json（{len(sess.steps)} 段）")
 
 
 if __name__ == "__main__":

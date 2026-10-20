@@ -420,12 +420,14 @@ class Rig:
 
 
 def save_run(rig: Rig, out_dir: str, stem: str, meta: dict, steps: list[dict]) -> str:
-    """<stem>.csv（200 Hz の全記録）、<stem>_steps.csv（段ごとの平均）、<stem>.json（条件）。途中保存にも使う。"""
+    """<stem>.csv.gz（200 Hz の全記録、gzip・有効数字 7 桁）、<stem>_steps.csv（段ごとの平均）、<stem>.json（条件）。
+    途中保存にも使う。全記録はそのままの CSV だと 30 分で 100 MB を超え、GitHub に push できないので圧縮する
+    （pandas.read_csv でそのまま読める）。"""
     os.makedirs(out_dir, exist_ok=True)
     base = os.path.join(out_dir, stem)
     df = rig.to_frame()
     if not df.empty:
-        df.to_csv(base + ".csv", index=False)
+        df.to_csv(base + ".csv.gz", index=False, float_format="%.7g", compression="gzip")
     if steps:
         pd.DataFrame(steps).to_csv(base + "_steps.csv", index=False)
     n = rig.rx.n_packets
