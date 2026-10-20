@@ -46,7 +46,7 @@ python3 tools/pamtest/isotonic.py --pam DF_robot                        # おも
 python3 tools/pamtest/isotonic.py --pam DF_robot --mode pressure_major  # 圧力固定でおもりを足し引き
 
 # 2. 等尺性：自然長の基準 → 長さごとに「ゆるめる → 圧力で縮める → 固定 → 0 MPa → 測る」
-python3 tools/pamtest/isometric.py --pam DF_robot                         # plan の 0, 2, …, 12 %
+python3 tools/pamtest/isometric.py --pam DF_robot                         # plan の 0, 2, …, 14 %
 python3 tools/pamtest/isometric.py --pam DF_robot --contractions 0 4 8    # 長さを指定
 python3 tools/pamtest/isometric.py --pam DF_robot --start_pct 6 --ref_from <前のセッションの .json>   # 途中から再開
 

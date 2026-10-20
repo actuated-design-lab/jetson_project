@@ -1,9 +1,9 @@
 # pamtest_isometric.yaml — PAM 単体の等尺性試験（tools/pamtest/isometric.py）
 #
 # 1 セッション = 自然長の基準 → 長さ（contractions_pct）ごとに「ゆるめる → 圧力で縮める → 固定 → 0 MPa → 測る」
-# 1 長さ ≈ 縮める 1 分 + 測る 13 段 ×（ramp 1 s + hold 5 s）× cycles 3 ≈ 5 分 → 7 長さで 35 分ほど
+# 1 長さ ≈ 縮める 1 分 + 測る 13 段 ×（ramp 1 s + hold 5 s）× cycles 3 ≈ 5 分 → 8 長さで 40 分ほど
 
-contractions_pct: [0, 2, 4, 6, 8, 10, 12]   # 縮める向きにしか動かせないので、小さい順
+contractions_pct: [0, 2, 4, 6, 8, 10, 12, 14]   # 縮める向きにしか動かせないので、小さい順。14 % は F の可動範囲（〜15 %）の端
 
 pressures: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
 pressure_updown: true
