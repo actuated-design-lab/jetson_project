@@ -1,0 +1,234 @@
+{
+  "test": "isometric",
+  "pam": "DF_robot",
+  "contractions_pct": [
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0,
+    14.0
+  ],
+  "start_pct": 4.0,
+  "ref_from": "data/user0/pamtest/isometric_20261020/isometric_DF_robot_1792471553.json",
+  "natural_ref_mm": 250.79387623212645,
+  "lengths": [
+    {
+      "c_set": 4.0,
+      "c_actual": 4.074119394165336,
+      "P_fix": 0.22500000000000017,
+      "zero_force_N": 0.2704779198584034,
+      "fixed_mm": 244.68269714087845,
+      "slack_mm": 1.948670033363726
+    },
+    {
+      "c_set": 6.0,
+      "c_actual": 5.429226212649098,
+      "P_fix": 0.2430000000000002,
+      "zero_force_N": 0.07563631092256548,
+      "fixed_mm": 242.6500369131528,
+      "slack_mm": 2.7323165759460437
+    },
+    {
+      "c_set": 8.0,
+      "c_actual": 7.878370830223408,
+      "P_fix": 0.2775000000000002,
+      "zero_force_N": 0.05231826227606014,
+      "fixed_mm": 238.97631998679134,
+      "slack_mm": 6.153476747218889
+    },
+    {
+      "c_set": 10.0,
+      "c_actual": 10.141322144245123,
+      "P_fix": 0.34650000000000025,
+      "zero_force_N": 0.227132099368271,
+      "fixed_mm": 235.58189301575877,
+      "slack_mm": 10.34469233391792
+    }
+  ],
+  "plan": {
+    "contractions_pct": [
+      0,
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14
+    ],
+    "pressures": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6
+    ],
+    "pressure_updown": true,
+    "cycles": 3,
+    "zero_s": 2.0,
+    "ramp_s": 1.0,
+    "hold_s": 5.0,
+    "avg_s": 2.0,
+    "approach_rate_MPa_s": 0.03,
+    "approach_tol_pct": 0.2,
+    "approach_settle_s": 1.5,
+    "approach_nudge_MPa": 0.005
+  },
+  "plan_path": "tools/plans/pamtest_isometric.yaml",
+  "note": "",
+  "mock": false,
+  "git_rev": "unknown",
+  "config": {
+    "serial": {
+      "port": "/dev/ttyUSB0",
+      "baud": 230400
+    },
+    "channels": {
+      "pressure": "meas_pres_G"
+    },
+    "pam": {
+      "L0_mm": 150.0
+    },
+    "limits": {
+      "p_cmd_max": 0.6,
+      "p_meas_max": 0.65,
+      "force_max_N": 500.0,
+      "rx_timeout_s": 0.25,
+      "isometric_move_mm": 2.0,
+      "isometric_move_min_force_N": 10.0
+    }
+  },
+  "laser_calib": {
+    "gain": 1.0,
+    "offset": 0.0,
+    "sign": -1.0,
+    "updated": "2026-10-20 02:05:53",
+    "calibrated": true
+  },
+  "laser_ref_mm": 250.79387623212645,
+  "pressure_channel": "meas_pres_G",
+  "estop_reason": "Ctrl+C / q",
+  "n_packets": 341376,
+  "packet_yield": 1.0,
+  "n_dropped_bytes": 0,
+  "events": [
+    {
+      "t_pc": 79860.05120592,
+      "event": "start",
+      "t_rel": 1.0510376960010035
+    },
+    {
+      "t_pc": 79860.051802112,
+      "event": "natural_reference_inherited",
+      "ref_from": "data/user0/pamtest/isometric_20261020/isometric_DF_robot_1792471553.json",
+      "laser_mm": 250.79387623212645,
+      "t_rel": 1.0516338879970135
+    },
+    {
+      "t_pc": 79916.160445504,
+      "event": "fixed",
+      "c_set": 4.0,
+      "P": 0.22500000000000017,
+      "c_now": 4.074119394165336,
+      "laser_mm": 244.68269714087845,
+      "t_rel": 57.16027728001063
+    },
+    {
+      "t_pc": 79919.1812808,
+      "event": "zero",
+      "c_set": 4.0,
+      "c_actual": 4.074119394165336,
+      "slack_mm": 1.948670033363726,
+      "P_meas": -0.0054184237548188,
+      "laser_raw": 246.63136717424217,
+      "laser_mm": 246.63136717424217,
+      "laser_mm_std": 0.06305212591427407,
+      "force_N": 0.2704779198584034,
+      "force_N_std": 0.16222823868708014,
+      "n": 320,
+      "t_rel": 60.18111257599958
+    },
+    {
+      "t_pc": 80367.312699744,
+      "event": "fixed",
+      "c_set": 6.0,
+      "P": 0.2430000000000002,
+      "c_now": 5.429226212649098,
+      "laser_mm": 242.6500369131528,
+      "t_rel": 508.31253152000136
+    },
+    {
+      "t_pc": 80370.338796384,
+      "event": "zero",
+      "c_set": 6.0,
+      "c_actual": 5.429226212649098,
+      "slack_mm": 2.7323165759460437,
+      "P_meas": -0.005243139247405706,
+      "laser_raw": 245.38235348909885,
+      "laser_mm": 245.38235348909885,
+      "laser_mm_std": 0.07299510331946997,
+      "force_N": 0.07563631092256548,
+      "force_N_std": 0.18413402849070845,
+      "n": 320,
+      "t_rel": 511.33862816001056
+    },
+    {
+      "t_pc": 80767.12662208,
+      "event": "fixed",
+      "c_set": 8.0,
+      "P": 0.2775000000000002,
+      "c_now": 7.878370830223408,
+      "laser_mm": 238.97631998679134,
+      "t_rel": 908.1264538560063
+    },
+    {
+      "t_pc": 80770.156055072,
+      "event": "zero",
+      "c_set": 8.0,
+      "c_actual": 7.878370830223408,
+      "slack_mm": 6.153476747218889,
+      "P_meas": -0.005255663440394622,
+      "laser_raw": 245.12979673401023,
+      "laser_mm": 245.12979673401023,
+      "laser_mm_std": 0.05437591077680233,
+      "force_N": 0.05231826227606014,
+      "force_N_std": 0.2216129234693206,
+      "n": 320,
+      "t_rel": 911.155886848006
+    },
+    {
+      "t_pc": 81193.731305472,
+      "event": "fixed",
+      "c_set": 10.0,
+      "P": 0.34650000000000025,
+      "c_now": 10.141322144245123,
+      "laser_mm": 235.58189301575877,
+      "t_rel": 1334.7311372480035
+    },
+    {
+      "t_pc": 81196.7630216,
+      "event": "zero",
+      "c_set": 10.0,
+      "c_actual": 10.141322144245123,
+      "slack_mm": 10.34469233391792,
+      "P_meas": -0.003823549621429058,
+      "laser_raw": 245.92658534967669,
+      "laser_mm": 245.92658534967669,
+      "laser_mm_std": 0.06320146828039966,
+      "force_N": 0.227132099368271,
+      "force_N_std": 0.17925178069053538,
+      "n": 320,
+      "t_rel": 1337.7628533759998
+    },
+    {
+      "t_pc": 81565.751625216,
+      "event": "ESTOP",
+      "reason": "Ctrl+C / q",
+      "t_rel": 1706.7514569920022
+    }
+  ],
+  "saved": "2026-10-20 05:43:31"
+}

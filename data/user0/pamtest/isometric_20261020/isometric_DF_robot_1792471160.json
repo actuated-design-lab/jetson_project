@@ -1,0 +1,133 @@
+{
+  "test": "isometric",
+  "pam": "DF_robot",
+  "contractions_pct": [
+    0.0,
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0,
+    14.0
+  ],
+  "start_pct": null,
+  "ref_from": null,
+  "natural_ref_mm": 250.0809226520214,
+  "lengths": [
+    {
+      "c_set": 0.0,
+      "c_actual": -0.005707260452747202,
+      "P_fix": 0.0,
+      "zero_force_N": 0.599744026001785,
+      "fixed_mm": 250.08948354270052
+    }
+  ],
+  "plan": {
+    "contractions_pct": [
+      0,
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14
+    ],
+    "pressures": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6
+    ],
+    "pressure_updown": true,
+    "cycles": 3,
+    "zero_s": 2.0,
+    "ramp_s": 1.0,
+    "hold_s": 5.0,
+    "avg_s": 2.0,
+    "approach_rate_MPa_s": 0.03,
+    "approach_tol_pct": 0.2,
+    "approach_settle_s": 1.5,
+    "approach_nudge_MPa": 0.005
+  },
+  "plan_path": "tools/plans/pamtest_isometric.yaml",
+  "note": "",
+  "mock": false,
+  "git_rev": "unknown",
+  "config": {
+    "serial": {
+      "port": "/dev/ttyUSB0",
+      "baud": 230400
+    },
+    "channels": {
+      "pressure": "meas_pres_G"
+    },
+    "pam": {
+      "L0_mm": 150.0
+    },
+    "limits": {
+      "p_cmd_max": 0.6,
+      "p_meas_max": 0.65,
+      "force_max_N": 500.0,
+      "rx_timeout_s": 0.25,
+      "isometric_move_mm": 2.0
+    }
+  },
+  "laser_calib": {
+    "gain": 1.0,
+    "offset": 0.0,
+    "sign": -1.0,
+    "updated": "2026-10-20 02:05:53",
+    "calibrated": true
+  },
+  "laser_ref_mm": 250.0809226520214,
+  "pressure_channel": "meas_pres_G",
+  "estop_reason": "Ctrl+C / q",
+  "n_packets": 20152,
+  "packet_yield": 1.0006,
+  "n_dropped_bytes": 0,
+  "events": [
+    {
+      "t_pc": 77737.583352448,
+      "event": "start",
+      "t_rel": 1.0509529279952403
+    },
+    {
+      "t_pc": 77754.771149408,
+      "event": "natural_reference",
+      "P_meas": -0.00673940263153394,
+      "laser_raw": 250.0809226520214,
+      "laser_mm": 250.0809226520214,
+      "laser_mm_std": 0.026127213854849916,
+      "force_N": 0.7069816176844708,
+      "force_N_std": 0.1474229491073014,
+      "n": 300,
+      "t_rel": 18.238749887997983
+    },
+    {
+      "t_pc": 77808.974790624,
+      "event": "zero",
+      "c_set": 0.0,
+      "c_actual": -0.005707260452747202,
+      "P_meas": -0.005640448641056213,
+      "laser_raw": 250.08948354270052,
+      "laser_mm": 250.08948354270052,
+      "laser_mm_std": 0.021390630104621878,
+      "force_N": 0.599744026001785,
+      "force_N_std": 0.1593562412785275,
+      "n": 320,
+      "t_rel": 72.44239110399212
+    },
+    {
+      "t_pc": 77837.1838632,
+      "event": "ESTOP",
+      "reason": "Ctrl+C / q",
+      "t_rel": 100.65146367999841
+    }
+  ],
+  "saved": "2026-10-20 04:41:02"
+}

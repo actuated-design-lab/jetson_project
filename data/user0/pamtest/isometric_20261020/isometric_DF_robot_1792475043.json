@@ -1,0 +1,160 @@
+{
+  "test": "isometric",
+  "pam": "DF_robot",
+  "contractions_pct": [
+    12.0,
+    14.0
+  ],
+  "start_pct": 12.0,
+  "ref_from": "data/user0/pamtest/isometric_20261020/isometric_DF_robot_1792471553.json",
+  "natural_ref_mm": 250.79387623212645,
+  "lengths": [
+    {
+      "c_set": 12.0,
+      "c_actual": 11.682374401541969,
+      "P_fix": 0.35300000000000026,
+      "zero_force_N": 0.2133033997619576,
+      "fixed_mm": 233.2703146298135,
+      "slack_mm": 12.458775533412705
+    },
+    {
+      "c_set": 14.0,
+      "c_actual": 13.74913169936275,
+      "P_fix": 0.43500000000000033,
+      "zero_force_N": 0.36279641102329974,
+      "fixed_mm": 230.17017868308233,
+      "slack_mm": 16.177804067938894
+    }
+  ],
+  "plan": {
+    "contractions_pct": [
+      0,
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14
+    ],
+    "pressures": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6
+    ],
+    "pressure_updown": true,
+    "cycles": 3,
+    "zero_s": 2.0,
+    "ramp_s": 1.0,
+    "hold_s": 5.0,
+    "avg_s": 2.0,
+    "approach_rate_MPa_s": 0.03,
+    "approach_tol_pct": 0.2,
+    "approach_settle_s": 1.5,
+    "approach_nudge_MPa": 0.005
+  },
+  "plan_path": "tools/plans/pamtest_isometric.yaml",
+  "note": "",
+  "mock": false,
+  "git_rev": "unknown",
+  "config": {
+    "serial": {
+      "port": "/dev/ttyUSB0",
+      "baud": 230400
+    },
+    "channels": {
+      "pressure": "meas_pres_G"
+    },
+    "pam": {
+      "L0_mm": 150.0
+    },
+    "limits": {
+      "p_cmd_max": 0.6,
+      "p_meas_max": 0.65,
+      "force_max_N": 500.0,
+      "rx_timeout_s": 0.25,
+      "isometric_move_mm": 2.0,
+      "isometric_move_min_force_N": 10.0
+    }
+  },
+  "laser_calib": {
+    "gain": 1.0,
+    "offset": 0.0,
+    "sign": -1.0,
+    "updated": "2026-10-20 02:05:53",
+    "calibrated": true
+  },
+  "laser_ref_mm": 250.79387623212645,
+  "pressure_channel": "meas_pres_G",
+  "estop_reason": null,
+  "n_packets": 151506,
+  "packet_yield": 1.0001,
+  "n_dropped_bytes": 0,
+  "events": [
+    {
+      "t_pc": 81620.227019072,
+      "event": "start",
+      "t_rel": 1.0511826559959445
+    },
+    {
+      "t_pc": 81620.227698624,
+      "event": "natural_reference_inherited",
+      "ref_from": "data/user0/pamtest/isometric_20261020/isometric_DF_robot_1792471553.json",
+      "laser_mm": 250.79387623212645,
+      "t_rel": 1.051862207998056
+    },
+    {
+      "t_pc": 81745.655378656,
+      "event": "fixed",
+      "c_set": 12.0,
+      "P": 0.35300000000000026,
+      "c_now": 11.682374401541969,
+      "laser_mm": 233.2703146298135,
+      "t_rel": 126.47954223999113
+    },
+    {
+      "t_pc": 81748.677850592,
+      "event": "zero",
+      "c_set": 12.0,
+      "c_actual": 11.682374401541969,
+      "slack_mm": 12.458775533412705,
+      "P_meas": -0.005589529793508908,
+      "laser_raw": 245.7290901632262,
+      "laser_mm": 245.7290901632262,
+      "laser_mm_std": 0.11886983262248771,
+      "force_N": 0.2133033997619576,
+      "force_N_std": 0.23418420542963705,
+      "n": 320,
+      "t_rel": 129.50201417598873
+    },
+    {
+      "t_pc": 82128.626975776,
+      "event": "fixed",
+      "c_set": 14.0,
+      "P": 0.43500000000000033,
+      "c_now": 13.74913169936275,
+      "laser_mm": 230.17017868308233,
+      "t_rel": 509.4511393599969
+    },
+    {
+      "t_pc": 82131.651743328,
+      "event": "zero",
+      "c_set": 14.0,
+      "c_actual": 13.74913169936275,
+      "slack_mm": 16.177804067938894,
+      "P_meas": -0.005764047743826839,
+      "laser_raw": 246.34798275102122,
+      "laser_mm": 246.34798275102122,
+      "laser_mm_std": 0.04582429797093113,
+      "force_N": 0.36279641102329974,
+      "force_N_std": 0.16337064993083647,
+      "n": 320,
+      "t_rel": 512.47590691199
+    }
+  ],
+  "saved": "2026-10-20 05:56:50"
+}

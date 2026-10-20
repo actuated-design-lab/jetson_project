@@ -1,0 +1,191 @@
+{
+  "test": "isometric",
+  "pam": "DF_robot",
+  "contractions_pct": [
+    0.0,
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0,
+    14.0
+  ],
+  "start_pct": null,
+  "ref_from": null,
+  "natural_ref_mm": 250.79387623212645,
+  "lengths": [
+    {
+      "c_set": 0.0,
+      "c_actual": 4.697814186253405e-05,
+      "P_fix": 0.0,
+      "zero_force_N": 12.990688039796163,
+      "fixed_mm": 250.79380576491366
+    },
+    {
+      "c_set": 2.0,
+      "c_actual": 1.9665243132232602,
+      "P_fix": 0.1545000000000001,
+      "zero_force_N": 0.35898159733880036,
+      "fixed_mm": 247.84408976229156
+    },
+    {
+      "c_set": 4.0,
+      "c_actual": 3.154808928872588,
+      "P_fix": 0.22650000000000017,
+      "zero_force_N": 0.0554654835657726,
+      "fixed_mm": 246.06166283881757
+    }
+  ],
+  "plan": {
+    "contractions_pct": [
+      0,
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14
+    ],
+    "pressures": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6
+    ],
+    "pressure_updown": true,
+    "cycles": 3,
+    "zero_s": 2.0,
+    "ramp_s": 1.0,
+    "hold_s": 5.0,
+    "avg_s": 2.0,
+    "approach_rate_MPa_s": 0.03,
+    "approach_tol_pct": 0.2,
+    "approach_settle_s": 1.5,
+    "approach_nudge_MPa": 0.005
+  },
+  "plan_path": "tools/plans/pamtest_isometric.yaml",
+  "note": "",
+  "mock": false,
+  "git_rev": "unknown",
+  "config": {
+    "serial": {
+      "port": "/dev/ttyUSB0",
+      "baud": 230400
+    },
+    "channels": {
+      "pressure": "meas_pres_G"
+    },
+    "pam": {
+      "L0_mm": 150.0
+    },
+    "limits": {
+      "p_cmd_max": 0.6,
+      "p_meas_max": 0.65,
+      "force_max_N": 500.0,
+      "rx_timeout_s": 0.25,
+      "isometric_move_mm": 2.0
+    }
+  },
+  "laser_calib": {
+    "gain": 1.0,
+    "offset": 0.0,
+    "sign": -1.0,
+    "updated": "2026-10-20 02:05:53",
+    "calibrated": true
+  },
+  "laser_ref_mm": 250.79387623212645,
+  "pressure_channel": "meas_pres_G",
+  "estop_reason": "等尺性なのに -2.15 mm 動いた（治具のずれ・破損？）",
+  "n_packets": 195446,
+  "packet_yield": 1.0001,
+  "n_dropped_bytes": 0,
+  "events": [
+    {
+      "t_pc": 78129.987077632,
+      "event": "start",
+      "t_rel": 1.051146591998986
+    },
+    {
+      "t_pc": 78143.988036512,
+      "event": "natural_reference",
+      "P_meas": -0.006090669234552222,
+      "laser_raw": 250.79387623212645,
+      "laser_mm": 250.79387623212645,
+      "laser_mm_std": 0.02213693125948235,
+      "force_N": 13.399070202744673,
+      "force_N_std": 0.13891710100299473,
+      "n": 300,
+      "t_rel": 15.05210547200113
+    },
+    {
+      "t_pc": 78155.58256704,
+      "event": "zero",
+      "c_set": 0.0,
+      "c_actual": 4.697814186253405e-05,
+      "P_meas": -0.004888102580119274,
+      "laser_raw": 250.79380576491366,
+      "laser_mm": 250.79380576491366,
+      "laser_mm_std": 0.021677353353045145,
+      "force_N": 12.990688039796163,
+      "force_N_std": 0.1823824957990452,
+      "n": 320,
+      "t_rel": 26.646635999990394
+    },
+    {
+      "t_pc": 78667.45186848,
+      "event": "fixed",
+      "c_set": 2.0,
+      "P": 0.1545000000000001,
+      "c_now": 2.018270414673225,
+      "t_rel": 538.5159374399955
+    },
+    {
+      "t_pc": 78670.478402592,
+      "event": "zero",
+      "c_set": 2.0,
+      "c_actual": 1.9665243132232602,
+      "P_meas": -0.004598533303685355,
+      "laser_raw": 247.84408976229156,
+      "laser_mm": 247.84408976229156,
+      "laser_mm_std": 0.021173856129369187,
+      "force_N": 0.35898159733880036,
+      "force_N_std": 0.17051496022973076,
+      "n": 320,
+      "t_rel": 541.5424715519912
+    },
+    {
+      "t_pc": 79086.76707856,
+      "event": "fixed",
+      "c_set": 4.0,
+      "P": 0.22650000000000017,
+      "c_now": 4.701508046302403,
+      "t_rel": 957.8311475200026
+    },
+    {
+      "t_pc": 79089.795125504,
+      "event": "zero",
+      "c_set": 4.0,
+      "c_actual": 3.154808928872588,
+      "P_meas": -0.004833900226918272,
+      "laser_raw": 246.06166283881757,
+      "laser_mm": 246.06166283881757,
+      "laser_mm_std": 0.10475282707692044,
+      "force_N": 0.0554654835657726,
+      "force_N_std": 0.16839579400915297,
+      "n": 320,
+      "t_rel": 960.859194463992
+    },
+    {
+      "t_pc": 79106.03628112,
+      "event": "ESTOP",
+      "reason": "等尺性なのに -2.15 mm 動いた（治具のずれ・破損？）",
+      "t_rel": 977.1003500799998
+    }
+  ],
+  "saved": "2026-10-20 05:02:22"
+}

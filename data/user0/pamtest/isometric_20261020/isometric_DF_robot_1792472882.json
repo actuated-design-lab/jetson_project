@@ -1,0 +1,134 @@
+{
+  "test": "isometric",
+  "pam": "DF_robot",
+  "contractions_pct": [
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0,
+    14.0
+  ],
+  "start_pct": 4.0,
+  "ref_from": "data/user0/pamtest/isometric_20261020/isometric_DF_robot_1792471553.json",
+  "natural_ref_mm": 250.79387623212645,
+  "lengths": [
+    {
+      "c_set": 4.0,
+      "c_actual": 2.3969551123272104,
+      "P_fix": 0.21600000000000016,
+      "zero_force_N": 0.3728102969451138,
+      "fixed_mm": 247.19844356363564
+    }
+  ],
+  "plan": {
+    "contractions_pct": [
+      0,
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14
+    ],
+    "pressures": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6
+    ],
+    "pressure_updown": true,
+    "cycles": 3,
+    "zero_s": 2.0,
+    "ramp_s": 1.0,
+    "hold_s": 5.0,
+    "avg_s": 2.0,
+    "approach_rate_MPa_s": 0.03,
+    "approach_tol_pct": 0.2,
+    "approach_settle_s": 1.5,
+    "approach_nudge_MPa": 0.005
+  },
+  "plan_path": "tools/plans/pamtest_isometric.yaml",
+  "note": "",
+  "mock": false,
+  "git_rev": "unknown",
+  "config": {
+    "serial": {
+      "port": "/dev/ttyUSB0",
+      "baud": 230400
+    },
+    "channels": {
+      "pressure": "meas_pres_G"
+    },
+    "pam": {
+      "L0_mm": 150.0
+    },
+    "limits": {
+      "p_cmd_max": 0.6,
+      "p_meas_max": 0.65,
+      "force_max_N": 500.0,
+      "rx_timeout_s": 0.25,
+      "isometric_move_mm": 2.0
+    }
+  },
+  "laser_calib": {
+    "gain": 1.0,
+    "offset": 0.0,
+    "sign": -1.0,
+    "updated": "2026-10-20 02:05:53",
+    "calibrated": true
+  },
+  "laser_ref_mm": 250.79387623212645,
+  "pressure_channel": "meas_pres_G",
+  "estop_reason": "等尺性なのに -113.12 mm 動いた（治具のずれ・破損？）",
+  "n_packets": 17605,
+  "packet_yield": 1.0007,
+  "n_dropped_bytes": 0,
+  "events": [
+    {
+      "t_pc": 79459.456412352,
+      "event": "start",
+      "t_rel": 1.0502791039907606
+    },
+    {
+      "t_pc": 79459.456889248,
+      "event": "natural_reference_inherited",
+      "ref_from": "data/user0/pamtest/isometric_20261020/isometric_DF_robot_1792471553.json",
+      "laser_mm": 250.79387623212645,
+      "t_rel": 1.050755999996909
+    },
+    {
+      "t_pc": 79542.336754688,
+      "event": "fixed",
+      "c_set": 4.0,
+      "P": 0.21600000000000016,
+      "c_now": 4.072366847926635,
+      "t_rel": 83.9306214399985
+    },
+    {
+      "t_pc": 79545.357597568,
+      "event": "zero",
+      "c_set": 4.0,
+      "c_actual": 2.3969551123272104,
+      "P_meas": -0.0034394050147821126,
+      "laser_raw": 247.19844356363564,
+      "laser_mm": 247.19844356363564,
+      "laser_mm_std": 0.01967374788642539,
+      "force_N": 0.3728102969451138,
+      "force_N_std": 0.15879498677137557,
+      "n": 320,
+      "t_rel": 86.95146431999456
+    },
+    {
+      "t_pc": 79546.306421248,
+      "event": "ESTOP",
+      "reason": "等尺性なのに -113.12 mm 動いた（治具のずれ・破損？）",
+      "t_rel": 87.90028799998981
+    }
+  ],
+  "saved": "2026-10-20 05:09:31"
+}
