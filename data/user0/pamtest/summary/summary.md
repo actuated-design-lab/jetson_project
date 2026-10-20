@@ -1,4 +1,4 @@
-# PAM 単体試験 10/20（DF_robot）のまとめ（analysis/pamtest/force_map.py）
+# PAM 単体試験 10/20（予備の筋。ファイル名の DF_robot は誤り）のまとめ（analysis/pamtest/force_map.py）
 
 ## 等尺性（圧力を上げる側、3 往復の平均）の力 [N]
 

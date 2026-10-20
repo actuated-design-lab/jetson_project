@@ -1,4 +1,4 @@
-"""force_map.py — PAM 単体試験（10/20、DF_robot）の等尺性・等張性から、力–収縮率–圧力の関係を描き、カタログ・今の sim と比べる
+"""force_map.py — PAM 単体試験（10/20、予備の筋。ファイル名の DF_robot は誤り）の等尺性・等張性から、力–収縮率–圧力の関係を描き、カタログ・今の sim と比べる
 
 入力（data/user0/pamtest/）
   等尺性 isometric_20261020/：有効な長さだけ（ISOM）。各段の収縮率はレーザの位置（自然長の基準 natural_ref_mm から）で出す
@@ -132,7 +132,7 @@ def main():
         ax.set_ylabel("force [N]", fontsize=9, color=INK2)
     h_, l_ = axs[0, 0].get_legend_handles_labels()
     fig.legend(h_, l_, loc="lower center", ncol=3, fontsize=8, frameon=False, labelcolor=INK2)
-    fig.suptitle("DF_robot, PAM single-unit test 2026-10-20: force vs contraction", fontsize=11, color="#0b0b0b",
+    fig.suptitle("Spare PAM, single-unit test 2026-10-20: force vs contraction", fontsize=11, color="#0b0b0b",
                  x=0.06, ha="left")
     fig.tight_layout(rect=(0, 0.08, 1, 0.97))
     fig.savefig(os.path.join(out, "fig_force_length.png"), dpi=160)
@@ -160,7 +160,7 @@ def main():
     plt.close(fig)
 
     # ---- 数字 -----------------------------------------------------------------------
-    L = ["# PAM 単体試験 10/20（DF_robot）のまとめ（analysis/pamtest/force_map.py）", ""]
+    L = ["# PAM 単体試験 10/20（予備の筋。ファイル名の DF_robot は誤り）のまとめ（analysis/pamtest/force_map.py）", ""]
     up = gi[gi.P_dir == "up"].copy()
     up["cat"] = [float(cat(p, np.array([h]))[0]) for p, h in zip(up.P, up.h)]
     up["ratio"] = up.F / up.cat
