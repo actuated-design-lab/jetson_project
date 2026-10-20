@@ -101,12 +101,12 @@ class Session:
         self.k += 1
         row = {"step": self.k, "mode": self.args.mode, "load_kg": load_kg,
                "total_load_N": (load_kg + self.hanger) * G, "load_dir": load_dir,
-               "P_cmd": p_cmd, "P_dir": p_dir, "P_DF": m["P_DF"], "laser_mm": m["laser_mm"],
+               "P_cmd": p_cmd, "P_dir": p_dir, "P_meas": m["P_meas"], "laser_mm": m["laser_mm"],
                "laser_mm_std": m["laser_mm_std"], "contraction_pct": self.contraction(m["laser_mm"]),
                "force_N": m["force_N"], "force_N_std": m["force_N_std"],
                "t_rel": time.perf_counter() - self.t0}
         self.steps.append(row)
-        print(f"\r  [{self.k:3d}] おもり {load_kg:5.2f} kg ({load_dir:6s}) P {p_cmd:.2f}→{m['P_DF']:.3f} MPa"
+        print(f"\r  [{self.k:3d}] おもり {load_kg:5.2f} kg ({load_dir:6s}) P {p_cmd:.2f}→{m['P_meas']:.3f} MPa"
               f" ({p_dir:4s}) | 収縮 {row['contraction_pct']:6.2f} % | 力 {m['force_N']:7.2f} N"
               + " " * 20)
 

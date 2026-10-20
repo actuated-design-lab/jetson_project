@@ -33,7 +33,7 @@ def monitor(rig: Rig, sec: float):
         rig.check_estop()
         s = rig.rx.get_latest()
         rate = (rig.rx.n_packets - n0) / max(time.perf_counter() - t0, 1e-3)
-        sys.stdout.write(f"\r  指令 {rig.target:5.3f} | 内圧 {s['meas_pres_DF']:6.3f} MPa | "
+        sys.stdout.write(f"\r  指令 {rig.target:5.3f} | 内圧 {s[rig.p_key]:6.3f} MPa | "
                          f"レーザ raw {s['meas_pres_F']:9.4f} → {rig.laser_mm(s['meas_pres_F']):8.3f} mm | "
                          f"力 {s['force_N']:7.2f} N | flag {s['flag']:.0f} | {rate:5.0f} Hz   ")
         sys.stdout.flush()

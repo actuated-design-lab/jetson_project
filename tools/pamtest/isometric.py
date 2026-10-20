@@ -84,13 +84,13 @@ def main():
                 rig.wait(plan["hold_s"])
                 m = rig.mean(plan["avg_s"])
                 row = {"step": len(steps) + 1, "cycle": c, "contraction_set_pct": a.contraction_pct,
-                       "P_cmd": p, "P_dir": pdir, "P_DF": m["P_DF"],
+                       "P_cmd": p, "P_dir": pdir, "P_meas": m["P_meas"],
                        "force_N": m["force_N"], "force_N_std": m["force_N_std"],
                        "force_N_zeroed": m["force_N"] - z["force_N"],
                        "laser_mm": m["laser_mm"], "move_mm": m["laser_mm"] - z["laser_mm"],
                        "t_rel": time.perf_counter() - t0}
                 steps.append(row)
-                print(f"\r  [{row['step']:3d}] 往復 {c} P {p:.2f}→{m['P_DF']:.3f} MPa ({pdir:4s}) | "
+                print(f"\r  [{row['step']:3d}] 往復 {c} P {p:.2f}→{m['P_meas']:.3f} MPa ({pdir:4s}) | "
                       f"力 {row['force_N_zeroed']:7.2f} N（±{m['force_N_std']:.2f}）| 動き {row['move_mm']:+.2f} mm"
                       + " " * 20)
             save_run(rig, out_dir, stem, meta, steps)       # 往復ごとに途中保存
