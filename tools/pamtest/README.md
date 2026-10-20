@@ -27,7 +27,7 @@
 | `laser_calib.json` | レーザの換算 `mm = gain * raw + offset` と収縮の向き `sign`（`check.py` が書く。試験機ごと） |
 | `check.py` | 配線の確認、レーザの 2 点校正（`cal`）、向き（`dir`） |
 | `isotonic.py` | 等張性（おもり一定）。計画は `tools/plans/pamtest_isotonic.yaml` |
-| `isometric.py` | 等尺性（長さ固定）。計画は `tools/plans/pamtest_isometric.yaml` |
+| `isometric.py` | 等尺性（長さ固定）。長さを何段か変えて 1 セッションで回す。計画は `tools/plans/pamtest_isometric.yaml` |
 
 ## 手順
 
@@ -45,9 +45,10 @@ python3 tools/pamtest/check.py
 python3 tools/pamtest/isotonic.py --pam DF_robot                        # おもり 1 段ごとに圧力の階段
 python3 tools/pamtest/isotonic.py --pam DF_robot --mode pressure_major  # 圧力固定でおもりを足し引き
 
-# 2. 等尺性：治具の長さを変えるたびに 1 ラン
-python3 tools/pamtest/isometric.py --pam DF_robot --contraction_pct 0
-python3 tools/pamtest/isometric.py --pam DF_robot --contraction_pct 4 --cycles 0   # 止めるまで
+# 2. 等尺性：自然長の基準 → 長さごとに「ゆるめる → 圧力で縮める → 固定 → 0 MPa → 測る」
+python3 tools/pamtest/isometric.py --pam DF_robot                         # plan の 0, 2, …, 12 %
+python3 tools/pamtest/isometric.py --pam DF_robot --contractions 0 4 8    # 長さを指定
+python3 tools/pamtest/isometric.py --pam DF_robot --start_pct 6 --ref_from <前のセッションの .json>   # 途中から再開
 
 # 実機なしで流れだけ確かめる
 python3 tools/pamtest/isotonic.py --pam test --mock
@@ -60,7 +61,8 @@ python3 tools/pamtest/isotonic.py --pam test --mock
 
 - 自動で動いている間は **スペース / e / q / Esc** のどれかで即 0 MPa（非常停止）。Ctrl+C も同じ
 - 自動停止（`rig_config.yaml` の `limits`）：内圧 > `p_meas_max`、|力| > `force_max_N`（等尺性だけ）、受信の途絶 > `rx_timeout_s`、
-  等尺性で変位が基準から > `isometric_move_mm`（治具のずれ・破損）
+  等尺性の測定中に変位が固定位置から > `isometric_move_mm`（治具のずれ・破損）
+- 等尺性で長さを変えるとき（治具をゆるめて圧力で縮め、固定するまで）は加圧したまま人が治具を触る。手を挟まないように
 - 指令は `p_cmd_max` でクリップ。どの終わり方でも 0 MPa を送ってから閉じる
 - ソフトの停止は ITV を 0 MPa にするだけ。Jetson が固まったときに備えて、供給側の手元バルブを手の届くところに
 - 等張性の付け替え待ち（Enter 待ち）の間はキーの非常停止は効かない（Ctrl+C と自動停止は効く）
@@ -75,4 +77,5 @@ python3 tools/pamtest/isotonic.py --pam test --mock
 - `<名前>_steps.csv`：各段の保持の最後 `avg_s` 秒の平均（等張性は収縮率、等尺性は 0 点を引いた力）
 - `<名前>.json`：計画・設定・レーザの換算と基準・非常停止の理由・受信率・イベント（基準を取った時刻など）
 
-等張性はおもり 1 段（`pressure_major` は圧力 1 本）ごと、等尺性は 1 往復ごとに途中保存する。
+等張性はおもり 1 段（`pressure_major` は圧力 1 本）ごと、等尺性は長さ 1 つごとに途中保存する。
+等尺性の `_steps.csv` には設定の収縮率 `c_set` と、自然長の基準から測った実際の収縮率 `c_actual` が入る。

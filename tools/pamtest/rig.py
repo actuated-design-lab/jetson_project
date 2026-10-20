@@ -164,7 +164,8 @@ class MockRig(MockLink):
         self.calib, self.L0 = calib, L0_mm
         self.p = 0.0
         self.load_N = 0.0
-        self.fixed_h = None          # 等尺性のとき収縮率（0〜1）
+        self.fixed_h = None          # 等尺性のとき収縮率（0〜1）。None なら治具がゆるんで自由に動く
+        self.h = 0.0                 # いまの収縮率（治具を固定するときに使う）
         self.rng = np.random.default_rng(0)
 
     def _generate(self):
@@ -181,6 +182,7 @@ class MockRig(MockLink):
             else:
                 h = self.fixed_h
                 force = max(k * (hmax - h), 0.0)
+            self.h = h
             mm = 50.0 + self.calib.get("sign", 1.0) * h * self.L0
             raw = (mm - self.calib["offset"]) / self.calib["gain"]
             self._pending += HEADER + struct.pack(
@@ -223,7 +225,8 @@ class Rig:
         self.estop_reason: str | None = None
         self._estop_evt = threading.Event()
         self._running = False
-        self.laser_ref_mm: float | None = None      # 等尺性の変位監視の基準
+        self.laser_ref_mm: float | None = None      # 長さの基準（等張性：吊り具だけ、等尺性：自然長）。表示の Δ
+        self.move_ref_mm: float | None = None       # 等尺性で治具を固定した位置。ここから動いたら止める（None で監視しない）
         self.keys = KeyWatcher(self.trigger_estop)
         self._last_n = 0
         self._last_rx_t = None
@@ -329,8 +332,8 @@ class Rig:
             self.trigger_estop(f"内圧 {s[self.p_key]:.3f} MPa > {self.lim['p_meas_max']}")
         elif self.use_force and abs(s["force_N"]) > self.lim["force_max_N"]:
             self.trigger_estop(f"力 {s['force_N']:.1f} N > {self.lim['force_max_N']} N")
-        elif self.isometric and self.laser_ref_mm is not None:
-            d = self.laser_mm(s["meas_pres_F"]) - self.laser_ref_mm
+        elif self.isometric and self.move_ref_mm is not None:
+            d = self.laser_mm(s["meas_pres_F"]) - self.move_ref_mm
             if abs(d) > self.lim["isometric_move_mm"]:
                 self.trigger_estop(f"等尺性なのに {d:+.2f} mm 動いた（治具のずれ・破損？）")
 
