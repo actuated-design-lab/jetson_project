@@ -33,7 +33,7 @@
 
 ### 0. 準備
 - 治具（3D プリント、PLA）：ねじは通し穴＋ナット埋め込み（PLA に直接タップしない）。力が層に沿う向きに積層する。
-  等尺性ではロードセルの固定部に数百 N かかる（DF、収縮 0 %・0.6 MPa で約 290 N）
+  等尺性ではロードセルの固定部に数百 N かかる（10/20 の予備の筋、収縮 0 %・0.6 MPa で約 290 N）
 - おもり：100 g × 2、200 g × 2、500 g × 3、1 kg × 1（0.1〜3.1 kg を 0.1 kg 刻みで作れる）
 - 供給圧：0.6 MPa 付近（ITV は供給より上は出せない）
 
@@ -63,7 +63,7 @@ export PORCARO_USER=user0 PORCARO_VENUE=pamtest      # venue を jfps2026 など
 
 ### 4. 等張性（約 30 分＋付け替え）
 ```bash
-python3 tools/pamtest/isotonic.py --pam DF_robot
+python3 tools/pamtest/isotonic.py --pam <筋の名前>     # spare1、DF_robot など。ファイル名に入る
 ```
 - 最初の質問：おもり無しのまま Enter（長さの基準）
 - おもり：0 → 0.2 → 0.5 → 1.0 → 1.5 → 2.0 → 3.1 kg を足して、2.0 → … → 0 と外す（13 回）。1 段ごとに 0→0.6→0 MPa を自動で 1 往復（約 2 分）
@@ -110,6 +110,8 @@ git push
 | `git pull` が divergent branches で止まる | Jetson でコミットした後に pull | `git pull --no-rebase --no-edit` |
 
 ### 10/20 の結果
+**10/20 に測ったのは予備の筋**（ロボットには付いていない新しめのもの）。`--pam DF_robot` で流したので、ファイル名の `DF_robot` は誤り。
+次からは `--pam` に筋の名前（`spare1`、`DF_robot` など）を正しく入れる。
 `data/user0/pamtest/summary/summary.md`、`fig_force_length.png`、`fig_length_hysteresis.png`。
 実測の力はカタログの 0.3〜0.7 倍（中央値 0.58）、自由収縮は 0.6 MPa で 18.4 %。sim 用のマップは porcaro_2026 の
 `tasks/data/pam_force_map_measured.csv`（使い方は同じフォルダの README）。
