@@ -70,7 +70,7 @@ python3 tools/pamtest/isotonic.py --pam test --mock
 
 `data/<user>/<venue>/<種類>_<日付>/`（種類 = `isotonic` / `isometric` / `rigcheck`）
 
-- `<名前>.csv`：200 Hz の全記録。`cmd_DF, meas_pres_DF, laser_raw, laser_mm, force_N, flag` に、
+- `<名前>.csv.gz`：200 Hz の全記録（gzip、有効数字 7 桁。`pandas.read_csv` でそのまま読める）。`cmd_DF, meas_pres_DF, laser_raw, laser_mm, force_N, flag` に、
   その時点の段の情報（`phase, load_kg, P_set, P_dir, cycle, step`）が付く
 - `<名前>_steps.csv`：各段の保持の最後 `avg_s` 秒の平均（等張性は収縮率、等尺性は 0 点を引いた力）
 - `<名前>.json`：計画・設定・レーザの換算と基準・非常停止の理由・受信率・イベント（基準を取った時刻など）

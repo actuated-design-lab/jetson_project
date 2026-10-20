@@ -14,7 +14,7 @@
   python3 tools/pamtest/isometric.py --pam DF_robot --contraction_pct 4 --cycles 0   # 止めるまで
   python3 tools/pamtest/isometric.py --pam DF_robot --contraction_pct 0 --mock
 
-出力: data/<user>/<venue>/isometric_<日付>/isometric_<pam>_c<収縮率>_<unixtime>.csv / _steps.csv / .json
+出力: data/<user>/<venue>/isometric_<日付>/isometric_<pam>_c<収縮率>_<unixtime>.csv.gz / _steps.csv / .json
 """
 from __future__ import annotations
 
@@ -103,7 +103,7 @@ def main():
     finally:
         rig.close()
         base = save_run(rig, out_dir, stem, meta, steps)
-        print(f"[Saved] {os.path.relpath(base)}.csv / _steps.csv / .json（{len(steps)} 段）")
+        print(f"[Saved] {os.path.relpath(base)}.csv.gz / _steps.csv / .json（{len(steps)} 段）")
 
 
 if __name__ == "__main__":

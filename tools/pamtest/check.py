@@ -11,7 +11,7 @@
   python3 tools/pamtest/check.py            # PORCARO_USER / PORCARO_VENUE を export 済み
   python3 tools/pamtest/check.py --mock
 
-記録: data/<user>/<venue>/rigcheck_<日付>/rigcheck_<unixtime>.csv（このセッションの 200 Hz 全部）
+記録: data/<user>/<venue>/rigcheck_<日付>/rigcheck_<unixtime>.csv.gz（このセッションの 200 Hz 全部）
 """
 from __future__ import annotations
 
@@ -132,7 +132,7 @@ def main():
     finally:
         rig.close()
         base = save_run(rig, run_dir(user, venue, "rigcheck"), stem, {"test": "rigcheck", "mock": a.mock}, [])
-        print(f"[Saved] {os.path.relpath(base)}.csv")
+        print(f"[Saved] {os.path.relpath(base)}.csv.gz")
 
 
 if __name__ == "__main__":
