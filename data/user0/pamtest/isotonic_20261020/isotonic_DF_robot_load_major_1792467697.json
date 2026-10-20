@@ -1,0 +1,103 @@
+{
+  "test": "isotonic",
+  "mode": "load_major",
+  "pam": "DF_robot",
+  "plan": {
+    "hanger_kg": 0.0,
+    "loads_kg": [
+      0.0,
+      0.2,
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      3.1
+    ],
+    "return": true,
+    "pressures": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6
+    ],
+    "pressure_updown": true,
+    "rest_pressure": 0.0,
+    "ramp_s": 1.0,
+    "settle_s": 3.0,
+    "hold_s": 8.0,
+    "avg_s": 3.0,
+    "pressure_major": {
+      "pressures": [
+        0.2,
+        0.4,
+        0.6
+      ],
+      "loads_kg": [
+        0.0,
+        0.5,
+        1.0,
+        1.5,
+        2.0,
+        2.5,
+        3.1
+      ]
+    }
+  },
+  "plan_path": "tools/plans/pamtest_isotonic.yaml",
+  "start_kg": 1.0,
+  "start_dir": "remove",
+  "ref_from": "data/user0/pamtest/isotonic_20261020/isotonic_DF_robot_load_major_1792465672.json",
+  "note": "",
+  "mock": false,
+  "git_rev": "unknown",
+  "config": {
+    "serial": {
+      "port": "/dev/ttyUSB0",
+      "baud": 230400
+    },
+    "channels": {
+      "pressure": "meas_pres_G"
+    },
+    "pam": {
+      "L0_mm": 150.0
+    },
+    "limits": {
+      "p_cmd_max": 0.6,
+      "p_meas_max": 0.65,
+      "force_max_N": 500.0,
+      "rx_timeout_s": 0.25,
+      "isometric_move_mm": 2.0
+    }
+  },
+  "laser_calib": {
+    "gain": 1.0,
+    "offset": 0.0,
+    "sign": -1.0,
+    "updated": "2026-10-20 02:05:53",
+    "calibrated": true
+  },
+  "laser_ref_mm": 154.4829837272567,
+  "pressure_channel": "meas_pres_G",
+  "estop_reason": null,
+  "n_packets": 116801,
+  "packet_yield": 1.0001,
+  "n_dropped_bytes": 0,
+  "events": [
+    {
+      "t_pc": 74274.070466112,
+      "event": "start",
+      "t_rel": 1.0513198400003603
+    },
+    {
+      "t_pc": 74274.070887328,
+      "event": "reference_inherited",
+      "ref_from": "data/user0/pamtest/isotonic_20261020/isotonic_DF_robot_load_major_1792465672.json",
+      "laser_mm": 154.4829837272567,
+      "t_rel": 1.0517410559987184
+    }
+  ],
+  "saved": "2026-10-20 03:51:23"
+}

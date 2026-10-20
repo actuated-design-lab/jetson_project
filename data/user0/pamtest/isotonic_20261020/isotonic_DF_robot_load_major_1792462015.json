@@ -1,0 +1,111 @@
+{
+  "test": "isotonic",
+  "mode": "load_major",
+  "pam": "DF_robot",
+  "plan": {
+    "hanger_kg": 0.0,
+    "loads_kg": [
+      0.0,
+      0.2,
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      3.1
+    ],
+    "return": true,
+    "pressures": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6
+    ],
+    "pressure_updown": true,
+    "rest_pressure": 0.0,
+    "ramp_s": 1.0,
+    "settle_s": 3.0,
+    "hold_s": 8.0,
+    "avg_s": 3.0,
+    "pressure_major": {
+      "pressures": [
+        0.2,
+        0.4,
+        0.6
+      ],
+      "loads_kg": [
+        0.0,
+        0.5,
+        1.0,
+        1.5,
+        2.0,
+        2.5,
+        3.1
+      ]
+    }
+  },
+  "plan_path": "tools/plans/pamtest_isotonic.yaml",
+  "note": "",
+  "mock": false,
+  "git_rev": "unknown",
+  "config": {
+    "serial": {
+      "port": "/dev/ttyUSB0",
+      "baud": 230400
+    },
+    "channels": {
+      "pressure": "meas_pres_G"
+    },
+    "pam": {
+      "L0_mm": 150.0
+    },
+    "limits": {
+      "p_cmd_max": 0.6,
+      "p_meas_max": 0.65,
+      "force_max_N": 500.0,
+      "rx_timeout_s": 0.25,
+      "isometric_move_mm": 2.0
+    }
+  },
+  "laser_calib": {
+    "gain": 1.0,
+    "offset": 0.0,
+    "sign": -1.0,
+    "updated": "2026-10-20 02:05:53",
+    "calibrated": true
+  },
+  "laser_ref_mm": 154.49510729107303,
+  "pressure_channel": "meas_pres_G",
+  "estop_reason": "Ctrl+C",
+  "n_packets": 680124,
+  "packet_yield": 1.0,
+  "n_dropped_bytes": 0,
+  "events": [
+    {
+      "t_pc": 68592.85986528,
+      "event": "start",
+      "t_rel": 1.0512949760013726
+    },
+    {
+      "t_pc": 68601.276772736,
+      "event": "reference",
+      "P_meas": -0.005804499305542519,
+      "laser_raw": 154.49510729107303,
+      "laser_mm": 154.49510729107303,
+      "laser_mm_std": 0.05087343378774647,
+      "force_N": -17.89665415407778,
+      "force_N_std": 0.9526212543175617,
+      "n": 300,
+      "t_rel": 9.468202432006365
+    },
+    {
+      "t_pc": 71992.288307104,
+      "event": "ESTOP",
+      "reason": "Ctrl+C",
+      "t_rel": 3400.4797368
+    }
+  ],
+  "saved": "2026-10-20 03:03:50"
+}

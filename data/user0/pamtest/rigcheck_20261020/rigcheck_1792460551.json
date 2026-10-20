@@ -1,0 +1,46 @@
+{
+  "test": "rigcheck",
+  "mock": false,
+  "git_rev": "unknown",
+  "config": {
+    "serial": {
+      "port": "/dev/ttyUSB0",
+      "baud": 230400
+    },
+    "pam": {
+      "L0_mm": 150.0
+    },
+    "limits": {
+      "p_cmd_max": 0.6,
+      "p_meas_max": 0.65,
+      "force_max_N": 500.0,
+      "rx_timeout_s": 0.25,
+      "isometric_move_mm": 2.0
+    }
+  },
+  "laser_calib": {
+    "gain": 1.0,
+    "offset": 0.0,
+    "sign": 1.0,
+    "calibrated": false
+  },
+  "laser_ref_mm": null,
+  "estop_reason": "受信が 0.25 s 途絶",
+  "n_packets": 70812,
+  "packet_yield": 0.9911,
+  "n_dropped_bytes": 0,
+  "events": [
+    {
+      "t_pc": 67127.51373552,
+      "event": "start",
+      "t_rel": 0.35038278400315903
+    },
+    {
+      "t_pc": 67413.063573472,
+      "event": "ESTOP",
+      "reason": "受信が 0.25 s 途絶",
+      "t_rel": 285.90022073600267
+    }
+  ],
+  "saved": "2026-10-20 01:48:29"
+}
