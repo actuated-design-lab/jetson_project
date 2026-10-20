@@ -3,7 +3,8 @@
 配線（2026/10 の試験機。通信はデプロイと同じ 230400 bps・受信 7 要素のまま）
   送信 Jetson -> MLB : [cmd_DF, cmd_F, cmd_G]  … 使うのは DF の ITV だけ。F・G は常に 0 を送る
   受信 MLB -> Jetson : [P_DF, (F の圧力 → レーザ変位計), P_G, wrist, grip, flag, force_N]
-      P_DF    : 試験する PAM の内圧 [MPa]（DF の圧力センサ）
+      内圧    : 試験する PAM の内圧 [MPa]。どの圧力センサの入力かは rig_config.yaml の channels.pressure
+                （meas_pres_DF / meas_pres_G）。2026/10/20 から DF のセンサが読めないので G のセンサを使用
       laser   : レーザ変位計。F の圧力センサの代わりに同じ入力へ挿したので、値は Simulink の
                 圧力の換算を通った「生の値」。mm への換算は laser_calib.json（check.py の cal で作る）
       force_N : ロードセル（これまでと同じ位置）。等尺性だけで使う。等張性は記録だけ（力の上限でも止めない）
@@ -183,7 +184,7 @@ class MockRig(MockLink):
             mm = 50.0 + self.calib.get("sign", 1.0) * h * self.L0
             raw = (mm - self.calib["offset"]) / self.calib["gain"]
             self._pending += HEADER + struct.pack(
-                RECV_FMT, p + self.rng.normal(0, 0.001), raw + self.rng.normal(0, 0.002), 0.0,
+                RECV_FMT, p + self.rng.normal(0, 0.001), raw + self.rng.normal(0, 0.002), p,
                 0.0, 0.0, 1.0, force + self.rng.normal(0, 0.2))
             self.n_emitted += 1
 
@@ -207,6 +208,7 @@ class Rig:
         self.use_force = use_force          # False（等張性）なら力の上限で止めない（ロードセルは記録だけ）
         self.lim = cfg["limits"]
         self.isometric = isometric
+        self.p_key = cfg.get("channels", {}).get("pressure", "meas_pres_DF")   # 内圧を読む受信の列
         self.mock = mock
         if mock:
             self.ser = MockRig(calib, cfg["pam"]["L0_mm"])
@@ -323,8 +325,8 @@ class Rig:
             return
         if s is None:
             return
-        if s["meas_pres_DF"] > self.lim["p_meas_max"]:
-            self.trigger_estop(f"内圧 {s['meas_pres_DF']:.3f} MPa > {self.lim['p_meas_max']}")
+        if s[self.p_key] > self.lim["p_meas_max"]:
+            self.trigger_estop(f"内圧 {s[self.p_key]:.3f} MPa > {self.lim['p_meas_max']}")
         elif self.use_force and abs(s["force_N"]) > self.lim["force_max_N"]:
             self.trigger_estop(f"力 {s['force_N']:.1f} N > {self.lim['force_max_N']} N")
         elif self.isometric and self.laser_ref_mm is not None:
@@ -381,7 +383,7 @@ class Rig:
 
     def mean(self, sec: float) -> dict:
         df = self.window(sec)
-        return {"P_DF": df.meas_pres_DF.mean(), "laser_raw": df.meas_pres_F.mean(),
+        return {"P_meas": df[self.p_key].mean(), "laser_raw": df.meas_pres_F.mean(),
                 "laser_mm": df.laser_mm.mean(), "laser_mm_std": df.laser_mm.std(),
                 "force_N": df.force_N.mean(), "force_N_std": df.force_N.std(), "n": len(df)}
 
@@ -391,7 +393,7 @@ class Rig:
             return
         mm = self.laser_mm(s["meas_pres_F"])
         rel = "" if self.laser_ref_mm is None else f" Δ{(mm - self.laser_ref_mm) * self.calib['sign']:+6.2f}mm"
-        sys.stdout.write(f"\r  指令 {self.target:5.3f} | 内圧 {s['meas_pres_DF']:6.3f} MPa | "
+        sys.stdout.write(f"\r  指令 {self.target:5.3f} | 内圧 {s[self.p_key]:6.3f} MPa | "
                          f"変位 {mm:8.3f} mm{rel} | 力 {s['force_N']:7.2f} N | {extra}   ")
         sys.stdout.flush()
 
@@ -406,11 +408,13 @@ class Rig:
             return sens
         sens = sens.rename(columns={"meas_pres_F": "laser_raw", "t_recv": "t_pc"})
         sens["laser_mm"] = self.laser_mm(sens["laser_raw"])
+        sens["P_meas"] = sens[self.p_key]                 # 試験する PAM の内圧（channels.pressure の列）
         sens["time"] = np.arange(len(sens)) * SENSOR_DT
         sens["t_recv_rel"] = sens["t_pc"] - sens["t_pc"].iloc[0]
         cmd = pd.DataFrame(list(self.cmd_logs)).sort_values("t_pc")
         out = pd.merge_asof(sens.sort_values("t_pc"), cmd, on="t_pc", direction="backward")
-        front = ["time", "t_recv_rel", "cmd_DF", "meas_pres_DF", "laser_raw", "laser_mm", "force_N", "flag"]
+        front = ["time", "t_recv_rel", "cmd_DF", "P_meas", "meas_pres_DF", "meas_pres_G", "laser_raw", "laser_mm",
+                 "force_N", "flag"]
         rest = [c for c in out.columns if c not in front and c != "t_pc"]
         return out[front + rest]
 
@@ -432,6 +436,7 @@ def save_run(rig: Rig, out_dir: str, stem: str, meta: dict, steps: list[dict]) -
             "config": rig.cfg,
             "laser_calib": rig.calib,
             "laser_ref_mm": rig.laser_ref_mm,
+            "pressure_channel": rig.p_key,
             "estop_reason": rig.estop_reason,
             "n_packets": n,
             "packet_yield": round(n / max(dur / SENSOR_DT, 1), 4),

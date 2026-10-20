@@ -5,6 +5,11 @@ serial:
   port: /dev/ttyUSB0
   baud: 230400            # デプロイ・信号再生と同じ（受信 7 要素）
 
+channels:
+  pressure: meas_pres_G   # 試験する PAM の内圧を読む受信の列（meas_pres_DF / meas_pres_G）
+                          # 2026/10/20：DF の圧力センサが読めないので、G の圧力センサを DF のレギュレータの出口につないだ
+                          # DF のセンサを直したら meas_pres_DF に戻す
+
 pam:
   L0_mm: 150.0            # 試験する PAM の自然長（収縮率 = 変位 / L0）。試験する筋に合わせて直す
 
